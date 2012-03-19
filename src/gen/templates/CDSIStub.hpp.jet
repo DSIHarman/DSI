@@ -1,0 +1,290 @@
+<%@jet
+
+   class    = "CDSIStub_HPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+   Method[] requestMethods = si.getRequestMethods();
+   Method[] responseMethods = si.getResponseMethods();
+   Value[] attributes = si.getAttributes();
+   String classname = "C" + si.getName() + "DSIStub" ;
+
+   String defineName = classname.toUpperCase() + "_HPP" ;
+
+   OUTPUTFILE( classname + ".hpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+#ifndef <%= defineName %>
+#define <%= defineName %>
+
+#include <bitset>
+
+#include "DSI<%= si.getName() %>.hpp"
+#include "dsi/CServer.hpp"
+
+
+/**
+ * DSI Stub: <%= si.getName() %>
+ *
+ * <%= si.getDescription( "\n * " ) %>
+ */
+class <%= classname %> : public DSI::CServer
+{
+   // moved to private area - not for external use, just for the generated code
+   using DSI::CServer::isSessionActive;
+   using DSI::CServer::removeSession;   
+      
+   using DSI::CServer::processRequest;   
+   
+   using DSI::CServer::getAttributeState;
+   using DSI::CServer::setAttributeState;
+   using DSI::CServer::writeAttribute;
+   
+   using DSI::CServer::getResponse;
+   using DSI::CServer::getResponseState;
+   using DSI::CServer::setResponseState;
+   
+   using DSI::CServer::findClientConnection;   
+         
+public:
+   /**
+    * Constructor.
+    */
+   <%= classname %>( const char* rolename, bool enableTCPIP = false );
+
+   /**
+    * Destructor.
+    */
+   virtual ~<%= classname %>();
+
+<% for( Value attribute : attributes ) { %>
+   /**
+    * Attribute: <%= attribute.getName() %>
+    *
+    * <%= attribute.getDescription( "\n    * " ) %>
+    */
+   bool is<%= attribute.getCapitalName() %>Valid() const;
+   
+   /**
+    * @return the state of the attribute.
+    */
+   DSI::DataStateType get<%= attribute.getCapitalName() %>State() const;
+   
+   /**
+    * Invalidate the attribute <%= attribute.getName() %>. This will send the invalidation 
+    * notification for the attribute to all attached clients.
+    */
+   void invalidate<%= attribute.getCapitalName() %>();
+   
+   <% if( attribute.getDataType().isVector() && attribute.notifyPartial() ) { %>
+   /**
+    * Set the attribute value. This will raise the transmission of an partial update notification to all attached clients.
+    */
+   void set<%= attribute.getCapitalName() %>( <%= helper.getParameterType(attribute.getDataType(), true, false ) %>, DSI::UpdateType type = DSI::UPDATE_COMPLETE, int16_t position = -1, int16_t count = -1);
+   <% } else { %>
+   /**
+    * Set the attribute value. This will raise the transmission of an update notification to all attached clients.
+    */
+   void set<%= attribute.getCapitalName() %>(<%= helper.getParameterType( attribute.getDataType(), true, false ) %>);
+   <% } %>
+   
+   /**
+    * Returns a reference to the attribute's value. With this function you may change an attributes value on a more
+    * granular base and therefore remove overhead.
+    *
+    * When changing the value you must take care to send an appropriate
+    * update request for the attribute via calling @c setNotification() with the appropriate updateId manually. Also
+    * make sure you have set the correct attribute state via @c setAttributeState(), e.g.
+    *
+    * @code
+    * // modify parts of your attribute
+    * MyStruct& str = getMyStructAttr();
+    * str.mName = "Haefner";
+    * str.mFirstName = "Martin";
+    * 
+    * // make sure the state is correct, otherwise an error would be sent instead of the attributes new data
+    * setAttributeState(UPD_ID_MyStructAttr, DATA_OK);
+    * sendNotification(UPD_ID_MyStructAttr);
+    * @endcode
+    */
+   <%= helper.getParameterType( attribute.getDataType(), false, true ) %> get<%= attribute.getCapitalName() %>() ;
+   
+   /**
+    * @return the attibute's value.
+    */
+   <%= helper.getParameterType( attribute.getDataType(), true, false ) %> get<%= attribute.getCapitalName() %>() const;
+
+<% } %>   
+
+<% for( Method method : requestMethods ) { %>
+   /**
+    * <%= method.getDescription( "\n    * " ) %>
+    */
+   virtual <%= helper.createMethodDeclaration( method, null, null, false, null, false ) %> = 0;
+
+<% } %>
+<% for( Method method : requestMethods ) { %>
+   /**
+    * Request failure indicator for request @c <%= method.getName() %>.
+    * The @c <%= si.getName()%>SendError function was called on the stub side within a response handler with
+    * a request id as argument.
+<% if (si.hasErrorEnum()) { %>
+    * You may have a look at the @c lastError member variable to get the reason for the error.
+<% } %>
+    *
+    * @param errType Can be either RESULT_REQUEST_ERROR or RESULT_REQUEST_BUSY.
+    */
+   virtual void <%= method.getMethodName() %>Failed( DSI::ResultType /*errType*/ ) { /* NOOP */ }
+
+<% } %>
+   
+   /*
+    * @param id The element which caused the error.
+    */
+   virtual void responseInvalid( <%= si.getName()%>::UpdateIdEnum /*id*/ ) { /* NOOP */ }
+   
+<% for( Method method : responseMethods ) { %>
+   /**
+    * <%= method.getDescription( "\n    * " ) %>
+    */
+   virtual <%= helper.createMethodDeclaration( method, null, null, true, null ) %>;
+
+<% } %>
+   
+protected:
+
+   /**
+    * Set the attribute state of the given attribute with updateId @c id. This call will not raise
+    * any error on client side, it will only change the attribute's state. If you want
+    * to send an invalidation request for an attribute to the attached clients you should either call
+    * @c sendError() (without previously setting the attribute state to DATA_INVALID) or 
+    * call @c invalidate<your attributes name>(), the preferred solution. You may also re-validate
+    * an attribute by calling this function with the appropriate arguments.
+    */
+   void setAttributeState(uint32_t id, DSI::DataStateType);
+   
+   /**
+    * Respond with an error message. You may use a request or response updateId for responding on requests
+    * with either request or response error. When using an attribute updateId an attribute notification 
+    * will be sent out if the attribute is in the valid state when the function is called. The attribute
+    * will be invalidated on server and client. The error enum is ignored for attributes.
+    */
+   void sendError( <%= si.getName()%>::UpdateIdEnum id<%= si.hasErrorEnum() ? (", " + si.getName() + "::Error err") : "" %> );
+
+private:
+
+   /**
+    * The @c <%= si.getName()%>SendError function was called on the stub side within a response handler
+    * with a response id as argument.
+<% if (si.hasErrorEnum()) { %>
+    * You may have a look at the @c lastError member variable to get the reason for the error.
+<% } %>
+     *
+	 * Callback that is called for Responses
+	 */
+   virtual void processRequest( DSI::Private::CDataRequestHandle &handle ) ;
+
+   /**
+    * Returns the current attribute state.
+    */
+   DSI::DataStateType getAttributeState( uint32_t id );
+      
+   void writeAttribute(uint32_t id, DSI::COStream& ostream, DSI::UpdateType type, int16_t position, int16_t count);
+   
+   uint32_t getResponse(uint32_t requestId);   
+   const char* getUpdateIDString(uint32_t updateId) const;
+
+   bool getResponseState(uint32_t responseId);
+   void setResponseState(uint32_t responseId, bool value);
+
+   /**
+    * Private Attribute Data
+    */
+<% for( Value attribute : attributes ) { %>
+   DSI::Private::ServerAttribute<<%= attribute.getDataType().getDSIBindingName( true ) %>> <%= attribute.getDSIBindingName() %>;    
+<% } %>
+
+   std::bitset<<%= responseMethods.length %>> mResponseStateMap;
+};
+
+
+// ------------------------------------------------------------------------------------------
+
+
+<% for( Value attribute : attributes ) { %>
+inline 
+bool <%= classname %>::is<%= attribute.getCapitalName() %>Valid() const
+{
+   return <%= attribute.getDSIBindingName() %>.isValid();
+}
+
+
+inline
+DSI::DataStateType <%= classname %>::get<%= attribute.getCapitalName() %>State() const
+{
+   return <%= attribute.getDSIBindingName() %>.mState;
+}
+
+
+inline 
+void <%= classname %>::invalidate<%= attribute.getCapitalName() %>()
+{
+<% if(si.hasErrorEnum()) { %>
+   <%= si.getName() %>::Error dummyValue;
+   sendError(<%= attribute.getDSIUpdateIdName(true) %>, dummyValue);
+<% } else { %>
+   sendError(<%= attribute.getDSIUpdateIdName(true) %>);
+<% } %>   
+}
+
+
+
+<% if( attribute.getDataType().isVector() && attribute.notifyPartial() ) { %>
+inline 
+void <%= classname %>::set<%= attribute.getCapitalName() %>( <%= helper.getParameterType( attribute.getDataType(), true, false ) %> attribute, DSI::UpdateType type, int16_t position, int16_t count )
+<% } else { %>
+inline 
+void <%= classname %>::set<%= attribute.getCapitalName() %>( <%= helper.getParameterType( attribute.getDataType(), true, false ) %> attribute )
+<% } %>
+{   
+   <% if(attribute.notifyOnChange()) { %>
+   bool changed = (!<%= attribute.getDSIBindingName() %>.isValid())
+              || !(<%= attribute.getDSIBindingName() %> == attribute);
+   <%= attribute.getDSIBindingName() %> = attribute;   
+   if( changed )
+   {
+      sendNotification( (uint32_t) <%= attribute.getDSIUpdateIdName( true ) %> );
+   }
+   <% } else if(attribute.notifyAlways()) { %>
+   <%= attribute.getDSIBindingName() %> = attribute ;   
+   sendNotification( (uint32_t) <%= attribute.getDSIUpdateIdName( true ) %> );
+   <% } else if(attribute.notifyPartial()) { %>
+   <%= attribute.getDSIBindingName() %>.set(attribute, type, &position, &count);   
+   sendNotification( (uint32_t) <%= attribute.getDSIUpdateIdName( true ) %>, type, position, count );      
+   <% } %>
+}
+
+
+inline 
+<%= helper.getParameterType( attribute.getDataType(), false, true ) %> <%= classname %>::get<%= attribute.getCapitalName() %>()
+{
+   return <%= attribute.getDSIBindingName() %>.mValue;
+}
+
+
+inline 
+<%= helper.getParameterType( attribute.getDataType(), true, false ) %> <%= classname %>::get<%= attribute.getCapitalName() %>() const
+{
+   return <%= attribute.getDSIBindingName() %>.mValue;
+}
+
+<% } %>
+
+
+#endif // <%= defineName %>
+
+

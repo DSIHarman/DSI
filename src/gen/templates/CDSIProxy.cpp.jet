@@ -1,0 +1,288 @@
+<%@jet
+
+   class    = "CDSIProxy_CPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   Method[] responseMethods = si.getResponseMethods();
+   Method[] requestMethods = si.getRequestMethods();
+   Value[] attributes = si.getAttributes();
+   String classname = "C" + si.getName() + "DSIProxy" ;
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+
+   OUTPUTFILE( classname + ".cpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+
+
+#include "<%= classname %>.hpp"
+#include "dsi/CIStream.hpp"
+#include "dsi/COStream.hpp"
+#include "dsi/private/util.hpp"
+#include "dsi/private/CRequestHandle.hpp"
+
+#include <stdio.h>
+#include <assert.h>
+
+
+using namespace <%= si.getName() %> ;
+
+<%= classname %>::<%= classname %>( const char* rolename )
+: DSI::CClient( SERVICE_NAME, rolename, MAJOR_VERSION, MINOR_VERSION )
+<% if (si.hasErrorEnum()) { %>
+, mLastError( (Error) 0 )
+<% } %>
+{
+   // NOOP
+}
+
+
+<%= classname %>::~<%= classname %>()
+{
+   // NOOP
+}
+
+
+void <%= classname %>::doComponentConnected()
+{
+   componentConnected();
+}
+
+
+void <%= classname %>::doComponentDisconnected()
+{
+   componentDisconnected();
+
+   <% for( Value attribute : attributes ) { %>
+   <%= attribute.getDSIBindingName() %>.resetState();
+   <% } %>
+}
+
+
+void <%= classname %>::processResponse( DSI::Private::CDataResponseHandle &handle )
+{
+<% if( (0 != attributes.length) || (0 != responseMethods.length) || (0 != requestMethods.length) ) { %>
+   UpdateIdEnum responseId = (UpdateIdEnum) handle.getRequestId();
+
+   DSI::CIStream istream(handle.payload(), handle.size());
+
+   if( DSI::RESULT_INVALID == handle.getResponseType() )
+   {
+   <% if (si.hasErrorEnum()) { %>
+      istream >> mLastError;
+   <% } %>
+      responseInvalid( responseId );
+   }
+   else
+   {
+      switch( responseId )
+      {
+   <% for( Value attribute : attributes ) { %>
+      case <%= attribute.getDSIUpdateIdName( true ) %>:
+         {
+            <%= attribute.getDSIBindingName() %>.mState = handle.getDataState();
+
+            if(<%= attribute.getDSIBindingName() %>.isValid())
+            {
+               <% if(attribute.notifyPartial()) { %>
+               DSI::UpdateType type ;
+               int16_t position, count ;
+               DSI::Private::readPartialAttribute(istream, <%= attribute.getDSIBindingName() %>.mValue, &type, &position, &count);
+               if( ( ERANGE != istream.getError() ) && ( 0 == istream.getError() )) // bad streaming data?
+               {
+                  on<%= attribute.getCapitalName() %>Update( <%= attribute.getDSIBindingName() %>.mValue, <%= attribute.getDSIBindingName() %>.mState, type, position, count );
+               }
+               <% } else { %>
+               istream >> <%= attribute.getDSIBindingName() %>;
+               if( ( ERANGE != istream.getError() ) && ( 0 == istream.getError() )) // bad streaming data?
+               {
+                  on<%= attribute.getCapitalName() %>Update( <%= attribute.getDSIBindingName() %>.mValue, <%= attribute.getDSIBindingName() %>.mState);
+               }
+               <% } %>
+            }
+            else if (DSI::DATA_INVALID == <%= attribute.getDSIBindingName() %>.mState)
+            {
+               on<%= attribute.getCapitalName() %>Update( <%= attribute.getDSIBindingName() %>.mValue, <%= attribute.getDSIBindingName() %>.mState<%= attribute.notifyPartial() ? ", DSI::UPDATE_NONE, 0, 0" : "" %>);
+            }
+         }
+         break;
+
+      <% } %>
+   <% for( Method method : responseMethods ) { %>
+      case <%= method.getDSIUpdateIdName( true ) %>:
+         {
+            <% for( Value parameter : method.getParameters() ) { %>
+            <%= parameter.getDataType().getDSIBindingName( si ) %> <%= parameter.getName() + parameter.getDataType().getInitializer(" = ") %> ;
+            <% } %>
+            <% for( Value parameter : method.getParameters() ) { %>
+            istream >> <%= parameter.getName() %>;
+            <% } %>
+            if( ( ERANGE != istream.getError() ) && ( 0 == istream.getError() )) // bad streaming data?
+            {
+               <%= method.getMethodName() + "( " + helper.getArgumentList( method, false, false, false ) %> );
+            }
+         }
+         break;
+
+   <% } %>
+   <% for( Method method : requestMethods ) { %>
+      case <%= method.getDSIUpdateIdName( true ) %>:
+         {
+            <% if (si.hasErrorEnum()) { %>
+            istream >> mLastError;
+            <% } %>
+            assert( ERANGE != istream.getError() ); // bad streaming data!?!
+            <%= method.getMethodName() %>Failed( handle.getResponseType() );
+         }
+         break;
+
+      <% } %>
+      default:
+         break;
+      }
+   }
+<% } %>
+}
+
+<% for( Method method : requestMethods ) { %>
+/**
+ * <%= method.getDescription( "\n    * " ) %>
+ */
+<%= helper.createMethodDeclaration( method, si, classname, false, "int" ) %>
+{
+<% if( !method.isUnregister() ) { %>
+   if (!isConnected())
+   {
+      return -1;
+   }
+<% } else { %>
+   if (mChannel.expired())
+   {
+      assert(!mChannel.expired());
+      return;
+   }
+<% } %>
+<% if( method.isRegister() ) { %>
+   int32_t sessionId = DSI::createId() ;
+   for (unsigned int idx = 0; idx < updIds.size(); ++idx)
+   {        
+      DSI::CRequestWriter writer( *mChannel.lock()
+                                , DSI::REQUEST_REGISTER_NOTIFY
+                                , DSI::DataRequest
+                                , (int32_t) updIds[idx]
+                                , mClientID
+                                , mServerID                                
+                                , mProtoMinor
+                                , sessionId);
+      (void)writer.flush();
+   }
+   
+   DSI::CRequestWriter writer( *mChannel.lock()
+                         , DSI::REQUEST
+                         , DSI::DataRequest
+                         , (int32_t) <%= method.getDSIUpdateIdName( true ) %>
+                         , mClientID
+                         , mServerID                         
+                         , mProtoMinor
+                         , sessionId);
+
+   <% if(method.getParameters().length != 0) { %>
+   DSI::COStream ostream(writer);
+   ostream
+   <% for( Value parameter: method.getParameters() ) { %>
+      << <%= parameter.getName() %>
+   <% } %>
+      ;
+   <% } %>
+   (void)writer.flush();
+
+<% } else if( method.isUnregister() ) { %>
+   if( 0 == updIds.size() )
+   {
+
+      DSI::CRequestWriter writer( *mChannel.lock()
+                             , DSI::REQUEST
+                             , DSI::DataRequest
+                             , (int32_t) <%= method.getDSIUpdateIdName( true ) %>
+                             , mClientID
+                             , mServerID
+                             , mProtoMinor
+                             , sessionId);
+
+      <% if(method.getParameters().length != 0) { %>
+      DSI::COStream ostream(writer);
+      ostream
+      <% for( Value parameter: method.getParameters() ) { %>
+         << <%= parameter.getName() %>
+      <% } %>
+         ;
+      <% } %>
+
+      writer.flush();
+   }
+   else
+   {
+      for (unsigned int idx=0; idx<updIds.size(); ++idx)
+      {
+         DSI::CRequestWriter writer(*mChannel.lock()
+                               , DSI::REQUEST_STOP_REGISTER_NOTIFY
+                               , DSI::DataRequest
+                               , (int32_t) updIds[idx]
+                               , mClientID
+                               , mServerID
+                               , mProtoMinor
+                               , sessionId);
+         (void)writer.flush();
+      }
+   }
+<% } else { %>   
+   DSI::CRequestWriter writer(*mChannel.lock()
+                         , DSI::REQUEST
+                         , DSI::DataRequest
+                         , (int32_t) <%= method.getDSIUpdateIdName( true ) %>
+                         , mClientID
+                         , mServerID
+                         , mProtoMinor);
+
+   <% if(method.getParameters().length != 0) { %>
+   DSI::COStream ostream(writer);
+   ostream
+   <% for( Value parameter: method.getParameters() ) { %>
+      << <%= parameter.getName() %>
+   <% } %>
+      ;
+   <% } %>
+
+   (void)writer.flush();
+<% } %>
+
+<% if( !method.isUnregister() ) { %>
+   return writer.getSequenceNumber();
+<% } %>
+}
+
+<% } %>
+
+
+<% for( Value attribute : attributes ) { %>
+<% if(attribute.notifyPartial()) { %>
+void <%= classname %>::on<%= attribute.getCapitalName() %>Update(<%= helper.getParameterType( attribute.getDataType(), si, true, false ) %> /*attribute*/, DSI::DataStateType /*state*/, DSI::UpdateType /*type*/, int16_t /*position*/, int16_t /*count*/)
+<% } else { %>
+void <%= classname %>::on<%= attribute.getCapitalName() %>Update(<%= helper.getParameterType( attribute.getDataType(), si, true, false ) %> /*attribute*/, DSI::DataStateType /*state*/)
+<% } %>
+{
+   // not implemented
+}
+
+<% } %>
+
+const char* <%= classname %>::getUpdateIDString( uint32_t updateId ) const
+{
+   return <%= si.getName() %>::toString( (<%= si.getName() %>::UpdateIdEnum)updateId );
+}
+
+

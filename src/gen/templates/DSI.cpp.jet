@@ -1,0 +1,105 @@
+<%@jet
+
+   class    = "DSI_CPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   DataType[] dataTypes = si.getDataTypes();
+   Method[] methods = si.getMethods();
+   Value[] attributes = si.getAttributes();
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+   Boolean ishbtd = context.getBooleanParameter("ishbtd");
+
+   OUTPUTFILE( "DSI" + si.getName() + ".cpp"  );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+
+
+#include "DSI<%= si.getName()%>.hpp"
+
+namespace <%= si.getName() %> {
+
+<% if(ishbtd) { %>
+const char* TYPE_NAME = "<%= si.getName() %>" ;
+<% } else {%>
+const char* SERVICE_NAME = "<%= si.getName() %>" ;
+<% } %>
+const int32_t MAJOR_VERSION = <%= si.getMajorVersion() %> ;
+const int32_t MINOR_VERSION = <%= si.getMinorVersion() %> ;
+
+<% for( DataType dataType : dataTypes ) { %>
+<% if( dataType.isStructure() ) { %>
+
+/* ************************************************************************************
+ *   <%= dataType.getDSIBindingName( true ) %>
+ * ************************************************************************************/
+<%= dataType.getDSIBindingName( false ) %>::<%= dataType.getDSIBindingName( false ) %>()
+<% for( String line: helper.generateInitCode( dataType ) ) { %>
+<%= line %>
+<% } %>
+{
+}
+
+<% Value[] fields = dataType.getFields();  %>
+<% if( fields.length > 0 ) { %>
+<%= dataType.getDSIBindingName( false ) %>::<%= dataType.getDSIBindingName( false ) %>( <%
+   for( Value field : fields )
+   {
+      if( field != fields[0] )
+      {
+         stringBuffer.append( ", " );
+      }
+      stringBuffer.append( helper.getParameterType( field.getDataType(), si, true, false ) + " _" + field.getName() );
+   }
+%> )
+<% for( Value field : fields ) { %>
+<%= (field == fields[0] ? ": " : ", ") + field.getName() + "( _" + field.getName() + " )" %>
+<% } %>
+{
+}
+<%= dataType.getDSIBindingName( false ) %>::<%= dataType.getDSIBindingName( false ) %>(const <%= dataType.getDSIBindingName( false ) %> &rhs)
+{
+   *this = rhs;
+}
+
+<%= dataType.getDSIBindingName( false ) %>& <%= dataType.getDSIBindingName( false ) %>::operator =( const <%= dataType.getDSIBindingName( false ) %>& rhs )
+{
+   if ( &rhs != this )
+   {
+<% for( Value field : fields ) { %>
+      <%= field.getName()%> = rhs.<%= field.getName()%>;
+<% } %>
+   }
+   return *this;
+
+}
+
+
+<% } %>
+<% } %>
+<% } %>
+
+<% if( !ishbtd ) { %>
+const char* toString( <%= si.getName() %>::UpdateIdEnum id )
+{
+   switch( id )
+   {
+<% for( Method method : methods ) { %>
+   case <%= method.getDSIUpdateIdName( false ) %>: return  "<%= method.getDSIUpdateIdName( false ) %>" ;
+<% } %>
+<% for( Value attribute : attributes ) { %>
+   case <%= attribute.getDSIUpdateIdName( false ) %>: return  "<%= attribute.getDSIUpdateIdName( false ) %>" ;
+<% } %>
+   case UPD_ID_implVersion: return "UPD_ID_implVersion";
+   default: return "UPD_ID_NOP" ;
+   }
+}
+<% } %>
+
+
+} // namespace <%= si.getName() %>
+

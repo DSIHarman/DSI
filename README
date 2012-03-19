@@ -1,0 +1,70 @@
+DSI(Distributed Service Interface) reference implementation
+
+DSI is a message oriented middleware designed for embedded systems in the automotive industry.
+
+Contained files
+---------------
+
+ - dsi base library is used by the applications using the DSI
+ - servicebroker an interface resolution and lifecycle service executable
+ - sbcat utility to retrieve servicebroker status information
+ - tests
+ - examples
+
+
+Requirements
+------------
+
+ - C++ compiler (g++ >= 4.4)
+ - cmake build system
+ - for unittests cppunit needs to be installed
+
+
+Build howto
+-----------
+
+For an out-of-source build just dive into the project root directory and call './update.sh' for a
+debug build. The resulting binaries will be created in the directory './build/debug'.
+
+You may install an necessary libraries and header by calling 'make install'.
+
+Available arguments for the update script update.sh:
+
+   ./update.sh [--release|--debug] <make target>
+   
+For running tests, type:
+
+   ./update.sh test
+
+When running tests directly on the build tree using 'make test' it is recommended that you tell ctest to
+add some output in case of failures. This can be done via
+
+   make test ARGS=--output-on-failure
+   
+
+Interoperation with Harman/Becker DSI2
+--------------------------------------
+
+DSI allows interoperability with applications build against the original Harman/Becker DSI2
+by the means of using forced TCP/IP connections. Local transport is not interoperabel because 
+different transport layers are in use (both use Unix domain sockets, but with different protocol).
+
+Since internal signalling mechanisms between servicebroker and application are not interoperabel 
+while the inter-servicebroker protocol is compatible the setup requires two different versions of
+servicebrokers working in master-slave mode in order to allow the applications contact their own
+variant of servicebroker:
+
+
+   +----------+       +----------------+            +-----------------+       +-----------+
+   |   ping*  | <---> | servicebroker* | <--tcp --> | servicebroker** | <---> |   pong**  |
+   +----------+       +----------------+            +-----------------+       +-----------+
+        ^                                                                           ^
+        |                                                                           |
+        +------------------------------- tcp ---------------------------------------+
+        
+* Open source variant
+** Harman/Becker variant     
+
+Make sure to connect the servicebrokers on an network interface other than loopback, even if the
+two servicebrokers are on the same node. Otherwise the DSI library code will not switch to TCP/IP 
+but will use local transport which would not be compatible.

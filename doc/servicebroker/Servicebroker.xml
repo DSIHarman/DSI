@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+  <title>Servicebroker</title>
+
+  <subtitle>Version 0.1</subtitle>
+
+  <bookinfo>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" contentwidth="50mm"
+                   fileref="figures/DSILogo.svg" scalefit="1" />
+      </imageobject>
+    </mediaobject>
+
+    <corpname>Harman/Becker Automotive Systems GmbH</corpname>
+
+    <address>Becker-Göring-Straße 16, 76307 Karlsbad, Germany</address>
+
+    <date>February 2012</date>
+
+    <authorgroup>
+      <author>
+        <firstname>Florentin</firstname>
+
+        <surname>Picioroaga <ulink
+        url="mailto:Florentin.Picioroaga@harman.com">Florentin.Picioroaga@harman.com</ulink></surname>
+      </author>
+    </authorgroup>
+
+    <editor>
+      <firstname>Florentin</firstname>
+
+      <surname>Picioroaga <ulink
+      url="mailto:Florentin.Picioroaga@harman.com">Florentin.Picioroaga@harman.com</ulink></surname>
+    </editor>
+
+    <pubdate>19.03.2012</pubdate>
+
+    <releaseinfo>Draft</releaseinfo>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>Harman International Industries, Inc.</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>This document is part of the DSI IPC open source software and is
+      licensed under Mozilla Public License v2.0.</para>
+    </legalnotice>
+
+    <revhistory>
+      <revision>
+        <revnumber>0.1</revnumber>
+
+        <date>February, 2012</date>
+
+        <authorinitials>FPicioroaga</authorinitials>
+
+        <revdescription>
+          <para>Initial version</para>
+        </revdescription>
+      </revision>
+    </revhistory>
+  </bookinfo>
+
+  <preface>
+    <title>Document overview</title>
+
+    <para>This document is part of a documentation package comprising
+    <glossterm>DSI</glossterm> and focuses on the service discovery part of the
+    DSI system.</para>
+
+    <para>The document is organized in the following chapters:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Introduction</para>
+
+        <para>In this chapter an overview of the DSI system is presented and the
+        basic principles of the service discovery are explained.</para>
+      </listitem>
+
+      <listitem>
+        <para>Servicebroker behaviour</para>
+
+        <para>The chapter explaining the Servicebroker dynamic behaviour and its
+        API.</para>
+      </listitem>
+
+      <listitem>
+        <para>Doxygen Servicebroker API</para>
+
+        <para>This is the extract from the source code documentation.</para>
+      </listitem>
+    </orderedlist>
+  </preface>
+
+  <chapter id="DSI_Introduction">
+    <title>Introduction</title>
+
+    <para>This chapter provides an introduction to the DSI system explaining how
+    the applications find themselves at run-time.</para>
+
+    <section>
+      <title>Service discovery</title>
+
+      <para>Currently, the DSI applications use a service discovery mechanism at
+      run-time , the Servicebroker, in order to build-up communication
+      connections.</para>
+
+      <para>The Servicebroker has the role to provide: <itemizedlist>
+          <listitem>
+            <para>a notification mechanism to inform applications about services
+            that sign-in and sign-out.</para>
+          </listitem>
+
+          <listitem>
+            <para>address information used by applications to establish
+            communication over the DSI IPC.</para>
+          </listitem>
+        </itemizedlist></para>
+
+      <para>The Servicebroker can be used in a distributed system and can scale
+      gracefully its infrastructure over many nodes. The naming service
+      organization structure is similar with the DNS (Domain Naming Service)
+      structure where each node in the network is serviced by a Servicebroker.
+      The Servicebrokers are organized in a tree structure, see below image. A
+      Servicebroker node in the tree, the slave Servicebroker, will forward its
+      unresolved requests and its information about local existing services to
+      its parent, its master Servicebroker.</para>
+
+      <figure>
+        <title>DSI run-time environment</title>
+
+        <mediaobject>
+          <imageobject role="html">
+            <imagedata fileref="figures/sb_tree_structure.png" format="PNG"
+                       scalefit="1" />
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>In the image above, the yellow part represents the Servicebroker's
+      tree structure, the blue lines are the DSI IPC communication connections
+      and the black lines represent the communication connections between the
+      DSI applications and the Servicebrokers. In this document only the two
+      communication protocols where the Servicebroker is involved will be
+      described. An improvement to the current architecture is to have these
+      protocols run over DSI IPC.</para>
+
+      <para>A simplified description from the point of view of a DSI application
+      on how the service discovery works is done here, a deeper view is realized
+      in the next chapter.</para>
+
+      <para>The DSI applications connect on start-up to the Servicebroker
+      running on the node and register the service interfaces they implemented.
+      In case they require to connect to a service interface implementation that
+      is external to the application they can:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>query the Servicebroker for the address information of the
+          requested service. On success the application can already start
+          communicating over DSI IPC with the requested service
+          implementation.</para>
+        </listitem>
+
+        <listitem>
+          <para>if the service is not present in the system a notification will
+          be set to be sent by the Servicebroker when the respective service
+          implementation is registered in the system. The application will be
+          able to repeat the address information query on receiving of the
+          notification.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Servicebroker behaviour</title>
+
+    <para>This chapter will describe the dynamic behaviour of the Servicebroker
+    on base of sequence diagrams.</para>
+
+    <section>
+      <title>Dynamic behaviour</title>
+
+      <para>These user cases are intended to bring a better understanding of the
+      interactions between the DSI applications and the Servicebroker.</para>
+
+      <para>Some general considerations about the diagrams: <itemizedlist>
+          <listitem>
+            <para>In order to not overload the diagrams only the most relevant
+            information for each action will be provided.</para>
+          </listitem>
+
+          <listitem>
+            <para>The servicebrokers generate notification ids that are unique
+            only for themselves, the ids are not unique among the complete
+            servicebroker tree structure.</para>
+          </listitem>
+
+          <listitem>
+            <para>Naming conventions for the actions:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>API names are used whenever possible.</para>
+              </listitem>
+
+              <listitem>
+                <para>Suggestive names are used to describe a logical
+                step.</para>
+              </listitem>
+
+              <listitem>
+                <para>libc names are used for low level operations, e.g. write
+                will send data to a file descriptor.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist></para>
+
+      <section>
+        <title>UC1: attach to an available server</title>
+
+        <para>A client attaches to a server that is already known in the system.
+        First the client creates a notification on the servicebroker for the
+        event the server will appear in the system.</para>
+
+        <para>The servicebrokers inter-communicate and inform the client that
+        the server is already present in the DSI system.</para>
+
+        <para>After the DSI connection is established both communication
+        partners set notifications on the servicebroker in the event that the
+        communication partner leaves the DSI system.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="right" fileref="figures/ATTACH_Server_1.wmf"
+                       scalefit="1" width="130%" />
+          </imageobject>
+        </mediaobject>
+      </section>
+
+      <section>
+        <title>UC2: attach to an available server</title>
+
+        <para>A client attaches to a server that is already known in the DSI
+        system.</para>
+
+        <para>The difference to the UC1 is that the client will request
+        immediately the connection information to the servicebroker. In this
+        case the client bets on the presence of the server in the system and
+        saves some communication time.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="right" fileref="figures/ATTACH_Server_2.wmf"
+                       scalefit="1" width="130%" />
+          </imageobject>
+        </mediaobject>
+      </section>
+
+      <section>
+        <title>UC3: extended attach to an available server</title>
+
+        <para>The client uses an improved and newer version of the attach
+        command. The attach extended command was introduced to save even more
+        communication time. This can bring a consistent especially when the DSI
+        applications run on different CPUs.</para>
+
+        <para>The command will combine the attach, setting server available and
+        server disconnect notifications.</para>
+
+        <para>In case the server is not available in the DSI system a connect
+        notification will be automatically set on servicebroker without the need
+        of an extra step.</para>
+
+        <para>If the server is available in the DSI system the connection
+        information will be delivered and a disconnect notification will be
+        automatically set on servicebroker without the need of an extra
+        step.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="right"
+                       fileref="figures/Extended_ATTACH_Server.wmf" scalefit="1"
+                       width="130%" />
+          </imageobject>
+        </mediaobject>
+      </section>
+
+      <section>
+        <title>UC4: attach to a not available server</title>
+
+        <para>A client attaches to a server that is not known in the DSI
+        system.</para>
+
+        <para>This use case will generate the same amount of communication in
+        the system as in UC1.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="right" fileref="figures/ATTACH_No_Server_1.wmf"
+                       scalefit="1" width="130%" />
+          </imageobject>
+        </mediaobject>
+      </section>
+
+      <section>
+        <title>UC5: attach to a not available server</title>
+
+        <para>A client attaches to a server that is not known in the DSI
+        system.</para>
+
+        <para>In this use case the bet of the client that the server is in the
+        DSI system will generate more communication than in the previous use
+        case.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="right" fileref="figures/ATTACH_No_Server_2.wmf"
+                       scalefit="1" width="130%" />
+          </imageobject>
+        </mediaobject>
+      </section>
+
+      <section>
+        <title>UC6: extended attach to a not available server</title>
+
+        <para>The improved attach command delivers in this case less
+        communication traffic as in the previous use cases where the server is
+        not already in the DSI system.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="right"
+                       fileref="figures/Extended_ATTACH_No_Server.wmf"
+                       scalefit="1" width="130%" />
+          </imageobject>
+        </mediaobject>
+      </section>
+    </section>
+  </chapter>
+
+  <appendix>
+    <xi:include href="doxygen.xml" xpointer="element(/1)"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
+  </appendix>
+
+  <glossary role="auto">
+    <glossdiv>
+      <title>Dummy Glossdiv</title>
+
+      <glossentry>
+        <glossterm>Dummy Glossary Entry</glossterm>
+
+        <glossdef>
+          <para>If you can see this, the document was processed
+          incorrectly.</para>
+        </glossdef>
+      </glossentry>
+    </glossdiv>
+  </glossary>
+</book>

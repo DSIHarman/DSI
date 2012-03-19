@@ -1,0 +1,64 @@
+<%@jet
+
+   class    = "CDSIProxy_Abstract_HPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+
+   // get the index of the current interface
+   int index = 0 ;
+   try { index = context.getIntegerParameter( "AbstractIndex" ); } catch( Exception e ){}
+
+   ServiceInterface.BaseInterface[] bis = si.getBaseInterfaces();
+   if( index >= bis.length )
+   {
+      // there is no more base interface
+      context.removeParameter( "AbstractIndex" );
+      return null ;
+   }
+   ServiceInterface.BaseInterface bi = bis[index];
+
+   // save the index for the next call
+   context.setIntegerParameter( "AbstractIndex", ++index );
+
+   // run generate once more
+   GENAGAIN();
+
+   // the generate directory must be set for interfaces with base interfaces
+   String outputDirectory = context.getStringParameter( "generateDirectory" ) ;
+   if( null == outputDirectory )
+   {
+      throw new GenerateException( "generate directory not set (see -gendir option)", null );
+   }
+   OUTPUTDIR( outputDirectory );
+
+   String rootDirectory = context.getStringParameter( "rootDirectory" ) ;
+   if( null == rootDirectory )
+   {
+      throw new GenerateException( "project root directory not set (see -rootdir option)", null );
+   }
+
+   // get the relative include path to the service interface
+   String include = si.getFullPath().substring( 1 + rootDirectory.length() ).replace( '\\', '/' ) ;
+   include = include.replaceAll("/([^/\\.]+)\\..*$", "/C$1DSIProxy.hpp") ;
+
+   String className = "C" + bi.name + "DSIProxy" ;
+   String defineName = className.toUpperCase() + "_HPP" ;
+
+
+   OUTPUTFILE( bi.path + "/" + className + ".hpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+#ifndef <%= defineName %>
+#define <%= defineName %>
+
+#include "<%= include %>"
+
+typedef C<%= si.getName() %>DSIProxy <%= className %> ;
+
+#endif // <%= defineName %>
+

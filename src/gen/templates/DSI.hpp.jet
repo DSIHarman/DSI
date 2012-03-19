@@ -1,0 +1,216 @@
+<%@jet
+
+   class    = "DSI_HPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   Method[] requestMethods = si.getRequestMethods();
+   Method[] responseMethods = si.getResponseMethods();
+   Value[] attributes = si.getAttributes();
+   DataType[] dataTypes = si.getDataTypes();
+   ServiceInterface.BaseInterface[] baseInterfaces = si.getBaseInterfaces();
+   Boolean ishbtd = context.getBooleanParameter("ishbtd");
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+
+   String defineName = "DSI_" + si.getName().toUpperCase() + "_HPP" ;
+   int index;
+
+   OUTPUTFILE( "DSI" + si.getName() + ".hpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+#ifndef <%= defineName %>
+#define <%= defineName %>
+
+#include "dsi/Streaming.hpp"
+<% if (si.hasVariant()) { %>
+#include "dsi/TVariant.hpp"
+<% } %>
+
+<% for( String include : ServiceInterface.getDSIIncludes() ) { %>
+#include "<%= include %>"
+<% } %>
+
+#include <vector>
+<% if (si.hasMap()) { %>
+#include <map>
+<% } %>
+
+
+namespace <%= si.getName() %>
+{
+
+<% if(ishbtd) { %>
+extern const char* TYPE_NAME ;
+<% } else {%>
+extern const char* SERVICE_NAME ;
+<% } %>
+extern const int32_t MAJOR_VERSION ;
+extern const int32_t MINOR_VERSION ;
+
+<% if( !ishbtd ) { %>
+/** ***************************************************************************
+ *  <%= si.getName() %>
+ *
+ *  <%= si.getDescription( "\n *  " ) %>
+ */
+enum UpdateIdEnum
+{
+<% index=0; for( Method method : requestMethods ) { %>
+   /**
+    * <%= method.getDescription( "\n    * " ) %>
+    */
+   <%= method.getDSIUpdateIdName( false ) %> = DSI::REQUEST_ID_FIRST + <%= index %>, // <%= String.format( "0x%08X", 0x00000000 + (index++) ) %>
+
+<% } %>
+<% index=0; for( Method method : responseMethods ) { %>
+   /**
+    * <%= method.getDescription( "\n    * " ) %>
+    */
+   <%= method.getDSIUpdateIdName( false ) %> = DSI::RESPONSE_ID_FIRST + <%= index %>, // <%= String.format( "0x%08X", 0x80000000 + (index++) ) %>
+
+<% } %>
+<% index=0; for( Value attribute : attributes ) { %>
+   /**
+    * <%= attribute.getDescription( "\n    * " ) %>
+    */
+   <%= attribute.getDSIUpdateIdName( false ) %> = DSI::ATTRIBUTE_ID_FIRST + <%= index %>, // <%= String.format( "0x%08X", 0xC0000000 + (index++) ) %>
+
+<% } %>
+   /**
+    * Implementation version
+    */
+   UPD_ID_implVersion = DSI::ATTRIBUTE_ID_LAST - 1,
+
+   /**
+    * Nothing
+    */
+   UPD_ID_NOP = DSI::ATTRIBUTE_ID_LAST
+
+} ;
+
+const char* toString( UpdateIdEnum );
+
+typedef std::vector<UpdateIdEnum> CUpdateIdVector ;
+
+<% } /* !ishbtd */ %>
+
+<% for( DataType dataType : dataTypes ) { %>
+<% if( dataType.isEnumeration() ) { %>
+<% EnumType _enum = dataType.getEnumeration() ; %>
+
+
+/** ***************************************************************************
+ * <%= _enum.getDescription( "\n * " ) %>
+ */
+enum <%= _enum.getName() %>
+{
+   <% EnumID[] enumIDs = _enum.getEnumIDs(); %>
+   <% for( EnumID enumID : enumIDs ) { %>
+   /*
+    * <%= enumID.getDescription( "\n    * " ) %>
+    */
+   <%= enumID.getName() + (enumID.hasValue() ? (" = " + enumID.getValue()) : "")%>,
+   <% } %>
+
+} ;
+
+<% } %>
+<% } %>
+
+} // end namespace <%= si.getName() %>
+
+namespace <%= si.getName() %> {
+
+<% for( DataType dataType : dataTypes ) { %>
+<% if( dataType.isStructure() ) { %>
+<% Value[] fields = dataType.getFields();  %>
+/** ***************************************************************************
+ * <%= dataType.getDescription( "\n * " ) %>
+ */
+struct <%= dataType.getDSIBindingName( false ) %>
+{
+   <%= dataType.getDSIBindingName( false ) %>();
+   <% if( fields.length > 0 ) { %>
+   <%= dataType.getDSIBindingName( false ) %>( <%
+      for( Value field : fields )
+      {
+         if( field != fields[0] )
+         {
+            stringBuffer.append( ", " );
+         }
+         if( field.getDataType().isVector() )
+         {
+            stringBuffer.append( "const " + field.getDataType().getDSIBindingName( si, false ) + "& " + field.getName() );
+         }
+         else
+         {
+            stringBuffer.append( helper.getParameterType( field.getDataType(), si, true, false ) + " " + field.getName() );
+         }
+      }
+      %> );
+   /// Copy constructor
+   <%= dataType.getDSIBindingName( false ) %>( const <%= dataType.getDSIBindingName( false ) %> &rhs);
+   /// Assignment operator
+   <%= dataType.getDSIBindingName( false ) %>& operator =( const <%= dataType.getDSIBindingName( false ) %>& rhs );
+   <% for( Value field : fields ) { %>
+   /**
+    * <%= field.getDescription( "\n    * " ) %>
+    */
+   <%= field.getDataType().getDSIBindingName( si, false ) + " " + field.getName() %> ;
+
+   <% } %>
+   <% } %>
+} ;
+
+} // end namespace <%= si.getName() %>
+
+inline bool operator == ( const <%= dataType.getDSIBindingName() %>& lhs, const <%= dataType.getDSIBindingName() %>& rhs )
+{
+   <% if( fields.length > 0 ) { %>
+   bool retval = true ;
+   if( &lhs != &rhs )
+   {
+      retval =
+      <% for( Value field : fields ) { %>
+      <%= (field == fields[0]) ? "   " : "&& " %>lhs.<%= field.getName() %> == rhs.<%= field.getName() %>
+      <% } %> ;
+   }
+   return retval ;
+   <% } else { %>
+   return true ;
+   <% } %>
+}
+
+
+namespace <%= si.getName() %> {
+
+<% } else if( dataType.isTypedef() ) {%>
+/** ***************************************************************************
+ * <%= dataType.getDescription( "\n * " ) %>
+ */
+typedef <%= helper.createTypedefDeclaration( dataType ) %> <%= dataType.getPlainName() %> ;
+
+<% } %>
+<% } %>
+
+<% for( Constant constant : si.getConstants() ) { %>
+/*
+ * <%= constant.getDescription( "\n    * " ) %>
+ */
+static const <%= constant.getDataType().getDSIBindingName( si, false ) %> <%= constant.getName() %> = <%= constant.getValue() %> ;
+
+<% } %>
+
+} // namespace <%= si.getName() %>
+
+#include "DSI<%= si.getName() %>Stream.hpp"
+
+<% for( ServiceInterface.BaseInterface bi : baseInterfaces ) { %>
+namespace <%= bi.name %> = <%= si.getName() %> ;
+<% } %>
+
+#endif // <%= defineName %>

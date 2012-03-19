@@ -1,0 +1,1048 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+  <title>DSI IPC Specification</title>
+
+  <subtitle>Version 0.2</subtitle>
+
+  <bookinfo>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" contentdepth="50mm"
+                   fileref="figures/DSILogo.svg" format="SVG" />
+      </imageobject>
+    </mediaobject>
+
+    <corpname>Harman/Becker Automotive Systems GmbH</corpname>
+
+    <address>Becker-Göring-Straße 16, 76307 Karlsbad, Germany</address>
+
+    <date>March 2012</date>
+
+    <authorgroup>
+      <author>
+        <firstname>Marie</firstname>
+
+        <surname>Ries <ulink
+        url="mailto:Marie.Ries@harman.com">Marie.Ries@harman.com</ulink></surname>
+      </author>
+
+      <author>
+        <firstname>Florentin</firstname>
+
+        <surname>Picioroaga <ulink
+        url="mailto:Florentin.Picioroaga@harman.com">Florentin.Picioroaga@harman.com</ulink></surname>
+      </author>
+    </authorgroup>
+
+    <editor>
+      <firstname>Marie</firstname>
+
+      <surname>Ries <ulink
+      url="mailto:Marie.Ries@harman.com">Marie.Ries@harman.com</ulink></surname>
+    </editor>
+
+    <pubdate>19.03.2012</pubdate>
+
+    <releaseinfo>Draft</releaseinfo>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>Harman International Industries, Inc.</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>This document is part of the DSI IPC open source software and is
+      licensed under the Mozilla Public License v2.0</para>
+    </legalnotice>
+
+    <revhistory>
+      <revision>
+        <revnumber>0.1</revnumber>
+
+        <date>February, 2012</date>
+
+        <authorinitials>MRies</authorinitials>
+
+        <revdescription>
+          <para>Initial version</para>
+        </revdescription>
+      </revision>
+
+      <revision>
+        <revnumber>0.2</revnumber>
+
+        <date>March, 2012</date>
+
+        <authorinitials>FPicioroaga</authorinitials>
+
+        <revdescription>
+          <para>Arranging document format to conform with the other documents in
+          the DSI specification. Add the introduction chapter. Review
+          documentation.</para>
+        </revdescription>
+      </revision>
+    </revhistory>
+  </bookinfo>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <para>This document describes the wire protocol, the serialization for the
+    DSI communication.</para>
+
+    <para>As it can be observed in <xref linkend="dsi_message_format_si" />
+    there are three main parts that are transmitted over the wire:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The simple IPC DSI protocol data which is focused on transporting
+        messages. Acts as a generic container for the service interface
+        abstraction.</para>
+      </listitem>
+
+      <listitem>
+        <para>Data needed to transport the concepts of the service interface
+        abstraction.</para>
+      </listitem>
+
+      <listitem>
+        <para>The user data, the payload that is transferred over the service
+        interface.</para>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>The DSI communication term used in this document comprises two
+      aspects: the DSI IPC protocol (the transport protocol) and the service
+      abstraction protocol.</para>
+    </note>
+
+    <para>Due to its serialization design the DSI communication can be flexibly
+    used in combination with other IPCs.</para>
+
+    <para>For example the service interface abstraction data can be embedded in
+    other IPC as the DSI IPC, e.g. service interface over DBus. In the same time
+    the DSI IPC container can transport messages for other abstractions as the
+    service interface.</para>
+  </chapter>
+
+  <chapter>
+    <title>IPC protocol</title>
+
+    <para>The DSI IPC protocol was designed based on the following
+    requirements:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>high performance communication protocol</para>
+      </listitem>
+
+      <listitem>
+        <para>scale down in terms of resource usage: CPU, RAM, code size</para>
+      </listitem>
+
+      <listitem>
+        <para>save network bandwidth</para>
+      </listitem>
+
+      <listitem>
+        <para>keep it simple</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The DSI IPC is basically a point to point simple communication
+    protocol that transports messages. As IPC is mainly used for exchanging
+    control messages that are normally small it has been defined that a
+    transmitted DSI packet has a maximal size of 4KB. As the size of a DSI
+    message can be greater than 4 KB, a segmentation of messages in several
+    packets might occur. This constraint is only an implementation configuration
+    that can be changed and it is not part of the protocol itself, other values
+    can be chosen for the maximum packet size.</para>
+
+    <para>In the following we will distinguish between the data of a message and
+    the data of a packet, i.e. only a part of the message.</para>
+
+    <para>The following figure depicts the wire protocol when establishing IPC
+    connections.</para>
+
+    <note>
+      <para>The <symbol>IPC command data</symbol> field is used only for the
+      <constant>ConnectRequest</constant> and
+      <constant>ConnectResponse</constant> commands. Also, depending on the
+      transport DSI runs, the <symbol>IPC command data</symbol> has a different
+      meaning.</para>
+    </note>
+
+    <figure id="dsi_message_format_ipc">
+      <title>DSI wire format when managing IPC connections</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata align="center" contentwidth="150mm"
+                     fileref="figures/dsi_message_format_ipc.png" scalefit="1" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <section>
+      <title>DSI header</title>
+
+      <para>Each DSI packet starts with a DSI header:</para>
+
+      <programlisting language="c">struct MessageHeader
+{
+   /** The type of the message (unique for all messages) */
+   int32_t type <co id="DSI_type" />; 
+   /** Protocol Major Version */
+   uint16_t protoMajor <co id="DSI_protoMajor" />;  
+   /** Protocol Minor Version */
+   uint16_t protoMinor <co id="DSI_protoMinor" />; 
+   /** The ID of the server which sends/receives this message. */
+   union SPartyID serverID <co id="DSI_serverID" />;
+   /** The ID of the client which sends/receives this message. */
+   union SPartyID clientID <co id="DSI_clientID" />;
+   /** The command. */
+   DSICmd cmd <co id="DSI_cmd" />; 
+   /** Flasgs (bit 1 indicates if there is at least one more packet coming) */
+   uint32_t flags; <co id="DSI_flags" />;
+   /** The length of this packet (without message header). */
+   uint32_t packetLength <co id="DSI_packetLength" />;
+   /** reserved (fillup for 8 byte-alignment) */
+   int32_t reserved[1]; <co id="DSI_reserved" />
+};
+</programlisting>
+
+      <calloutlist>
+        <callout arearefs="DSI_type">
+          <para>The element<parameter> type</parameter> is magic number that is
+          unique for all messages (DSI_MESSAGE_MAGIC = 0x200).</para>
+        </callout>
+
+        <callout arearefs="DSI_protoMajor">
+          <para>The element<parameter> protoMajor</parameter> describes the
+          Major version number of the <acronym>DSI</acronym> protocol. (current
+          value is 4)</para>
+        </callout>
+
+        <callout arearefs="DSI_protoMajor">
+          <para>The element<parameter> protoMinor</parameter> describes the
+          Minor version number of the <acronym>DSI</acronym> protocol. (current
+          value is 0)</para>
+        </callout>
+
+        <callout arearefs="DSI_serverID">
+          <para>The element<parameter> serverID</parameter> describes the ID of
+          the server. The id is currently generated by the Servicebroker when a
+          service registers in the DSI system.</para>
+        </callout>
+
+        <callout arearefs="DSI_clientID">
+          <para>The element <parameter>clientID</parameter> describes the ID of
+          the client. The id is currently generated by the Servicebroker when a
+          client requests connection information from the Servicebroker.</para>
+        </callout>
+
+        <callout arearefs="DSI_cmd">
+          <para>The element<parameter> cmd</parameter> indicates which kind of
+          command is sent:</para>
+
+          <programlisting>   enum Command
+   {
+      DataRequest=7,       ///&lt; a data request transfer is initiated
+      DataResponse=8,       ///&lt; a data response transfer is initiated
+      ConnectRequest = 9,  ///&lt; a connection is requested
+      DisconnectRequest = 10,  ///&lt; a disconnection is requested
+      ConnectResponse   = 11  ///&lt; response to a connect request
+   } cmd;
+</programlisting>
+
+          <para>The value of <parameter>cmd</parameter> determines the content
+          of the message.</para>
+        </callout>
+
+        <callout arearefs="DSI_flags">
+          <para>The element <parameter>flags</parameter> indicates if there are
+          more packets coming. Bit 1 indicates if there is at least one more
+          packet coming.</para>
+        </callout>
+
+        <callout arearefs="DSI_packetLength">
+          <para>The element <parameter>packetLength</parameter> describes the
+          length of this packet not including the length of the
+          <acronym>DSI</acronym> header. <note>
+              <para>The total message length is not known, the receiver only
+              knows if there is more data to be expected for the current message
+              over the <parameter>flags</parameter> field.</para>
+            </note></para>
+        </callout>
+
+        <callout arearefs="DSI_reserved">
+          <para>The element <parameter>reserved</parameter> has no meaning. It
+          has been introduced to achieve an 8-Byte alignment.</para>
+        </callout>
+      </calloutlist>
+    </section>
+
+    <section>
+      <title>DSI communication build up and shutdown</title>
+
+      <para></para>
+
+      <section>
+        <title>Client connect (Cmd: ConnectRequest)</title>
+
+        <para>The <constant>ConnectRequest</constant> is sent from the client to
+        the server to setup a new connection.</para>
+
+        <para>The data transferred with the <constant>ConnectRequest</constant>
+        command depends on the kind of socket where the command is
+        received.</para>
+
+        <para>If the <constant>ConnectRequest</constant> command is received on
+        a Unix Domain Socket, the message contains the following data.</para>
+
+        <programlisting>{
+     uint32_t pid;         ///&lt; process id in host-byte-order
+     uint32_t channel;     ///&lt; channel id (socket fd) in host-byte-order         
+ }</programlisting>
+
+        <calloutlist>
+          <callout arearefs="DSI_type">
+            <para>The pid is the process identification number of the client
+            process</para>
+          </callout>
+
+          <callout arearefs="DSI_protoMajor">
+            <para>The channel describes the file descriptor of the used
+            socket.</para>
+          </callout>
+        </calloutlist>
+
+        <para>If the <constant>ConnectRequest</constant> command is received on
+        a TCP socket the message contains the following data:</para>
+
+        <programlisting>   {
+      uint32_t ipAddress;   ///&lt; ip address in big endian byte-order
+      uint32_t port;        ///&lt; port in big endian byte-order
+   };
+</programlisting>
+
+        <calloutlist>
+          <callout arearefs="DSI_type">
+            <para>The <varname>ipAddress</varname> is the IP address of the
+            client TCP server socket</para>
+          </callout>
+
+          <callout arearefs="DSI_protoMajor">
+            <para>The <varname>port</varname> is the port number of the client
+            TCP server socket.</para>
+          </callout>
+        </calloutlist>
+      </section>
+
+      <section>
+        <title>Server connect response (Cmd: ConnectResponse)</title>
+
+        <para>The <constant>ConnectResponse</constant> is sent from the server
+        to the client as response to a received
+        <constant>ConnectRequest.</constant></para>
+
+        <para>The <constant>ConnectResponse</constant> is sent over the same
+        socket where the <constant>ConnectRequest</constant> has been
+        received.</para>
+
+        <para>The data transferred with the <constant>ConnectResponse</constant>
+        command depends on the kind of socket where the command
+        <constant>ConnectRequest</constant> has been received.</para>
+
+        <para>If the <constant>ConnectRequest</constant> command has been
+        received on a Unix Domain Socket, the
+        <constant>ConnectResponse</constant> message contains the following
+        data:</para>
+
+        <programlisting>{
+     uint32_t pid;         ///&lt; process id in host-byte-order
+     uint32_t channel;     ///&lt; channel id (socket fd) in host-byte-order         
+ }</programlisting>
+
+        <calloutlist>
+          <callout arearefs="DSI_type">
+            <para>The pid is the process identification number of the server
+            process</para>
+          </callout>
+
+          <callout arearefs="DSI_protoMajor">
+            <para>The channel describes the file descriptor on the server</para>
+          </callout>
+        </calloutlist>
+
+        <para>If the <constant>ConnectRequest</constant> command has been
+        received on a TCP socket the <constant>ConnectResponse</constant>
+        message contains the following data:</para>
+
+        <programlisting>   {
+      uint32_t ipAddress;   ///&lt; ip address in big endian byte-order
+      uint32_t port;        ///&lt; port in big endian byte-order
+   };
+</programlisting>
+
+        <calloutlist>
+          <callout arearefs="DSI_type">
+            <para>The <varname>ipAddress</varname> is IP address of the server
+            TCP server socket</para>
+          </callout>
+
+          <callout arearefs="DSI_protoMajor">
+            <para>The <varname>port</varname> is the port number of the server
+            TCP server socket.</para>
+          </callout>
+        </calloutlist>
+      </section>
+
+      <section>
+        <title>Communication shutdown (Cmd: DisconnectRequest)</title>
+
+        <para>The <constant>DisconnectRequest</constant> is sent from the client
+        to the server to disconnect an existing client /server
+        connection.</para>
+
+        <para>Beside the DSI header no further data are transferred.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>DSI service interface message</title>
+
+      <para>The service interface logic is using the DSI IPC communication
+      mechanism to build high level concepts as attributes, requests,
+      notifications that can be used in the business logic. The following figure
+      describes the streaming format of the Harman/Becker service interface
+      request/response messages.</para>
+
+      <figure id="dsi_message_format_si">
+        <title>DSI wire format when transporting messages</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="center" contentwidth="150mm"
+                       fileref="figures/dsi_message_format_si.png" scalefit="1" />
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <section>
+        <title>Requests (Cmd: DataRequest)</title>
+
+        <para>All request messages contain the following data (preceded by the
+        <acronym>DSI</acronym> header):</para>
+
+        <programlisting>{
+   uint16, // service interface major version 
+   uint16, // service interface minor version
+   uint32, // request type <co id="co_requestType" />
+   uint32, // request id   <co id="co_requestId" />
+   int32   // sequence number <co id="co_requestSeqNo" />
+}</programlisting>
+
+        <calloutlist>
+          <callout arearefs="co_requestType">
+            <para>The following request types are currently defined
+            (<constant>0x00</constant>-<constant>0xFF</constant> are reserved
+            for internal use):</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>0x0100 (<constant>REQUEST</constant>)</para>
+
+                <para>Standard request: triggers a method call on the server
+                implementation.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0101 (<constant>REQUEST_NOTIFY</constant>)</para>
+
+                <para>Generic request: register for notifications for a data
+                attribute or for a response method. The attribute/response ID is
+                sent as request ID.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0102 (<constant>REQUEST_STOP_NOTIFY</constant>)</para>
+
+                <para>Generic request: clears any existing notification for a
+                data attribute or for a response method. The attribute/response
+                ID is sent as request ID.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0103
+                (<constant>REQUEST_LOAD_COMPONENT</constant>)</para>
+
+                <para>Generic request: used by the HARMAN component framework to
+                instantiate a component on demand.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0104
+                (<constant>REQUEST_STOP_ALL_NOTIFY</constant>)</para>
+
+                <para>Generic request: clears all existing notifications for
+                this client.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0105
+                (<constant>REQUEST_REGISTER_NOTIFY</constant>)</para>
+              </listitem>
+
+              <listitem>
+                <para>Generic request: registers for updates of an information
+                method. The information ID is sent as request ID. The sequence
+                number identifies the used session.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0106
+                (<constant>REQUEST_STOP_REGISTER_NOTIFY</constant>)</para>
+
+                <para>Generic request: clears specific update notification for
+                an information method. The information ID is sent as request ID.
+                The sequence number identifies the used session.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0107
+                (<constant>REQUEST_STOP_ALL_REGISTER_NOTIFY</constant>)</para>
+
+                <para>Generic request: clears all existing update notification
+                for this client and this session. The sequence number identifies
+                the used session.</para>
+              </listitem>
+            </itemizedlist>
+          </callout>
+
+          <callout arearefs="co_requestId">
+            <para>The request ID is interface specific and identifies an
+            attribute, request or response/information. The allowed kind of ID
+            depends on the request type</para>
+
+            <itemizedlist>
+              <listitem>
+                <para><constant>REQUEST</constant></para>
+
+                <para>The request ID identifies a request. Attribute or
+                response/information IDs are not allowed.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_NOTIFY</constant></para>
+
+                <para>The request ID identifies the attribute, request or
+                response/information to notify on.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_STOP_NOTIFY</constant></para>
+
+                <para>The request ID identifies the attribute, request or
+                response/information to stop being notified on.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_LOAD_COMPONENT</constant></para>
+
+                <para>The request ID is ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_STOP_ALL_NOTIFY</constant></para>
+
+                <para>The request ID is ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_REGISTER_NOTIFY</constant></para>
+
+                <para>The request ID identifies the information.
+                Attribute,request or response IDs are not allowed.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_STOP_REGISTER_NOTIFY</constant></para>
+
+                <para>The request ID identifies the information.
+                Attribute,request or response IDs are not allowed.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0107
+                (<constant>REQUEST_STOP_ALL_REGISTER_NOTIFY</constant>)</para>
+
+                <para>The request ID is ignored.</para>
+              </listitem>
+            </itemizedlist>
+          </callout>
+
+          <callout arearefs="co_requestSeqNo">
+            <para>The sequence number is used for session handling and/or to
+            assign a response to a request. For one client the sequence number
+            must be unique.</para>
+
+            <itemizedlist>
+              <listitem>
+                <para><constant>REQUEST</constant>:</para>
+
+                <para>if a response is attached the the request, the sequence
+                number must be returned in the response message.</para>
+
+                <para>If no response is attached the sequence number is
+                ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_NOTIFY</constant>:</para>
+
+                <para>The sequence number is ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_STOP_NOTIFY</constant>:</para>
+
+                <para>The sequence number is ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_LOAD_COMPONENT</constant>:</para>
+
+                <para>The sequence number is ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_STOP_ALL_NOTIFY</constant>:</para>
+
+                <para>The sequence number is ignored.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_REGISTER_NOTIFY</constant>:</para>
+
+                <para>The sequence number identifies the session.</para>
+              </listitem>
+
+              <listitem>
+                <para><constant>REQUEST_STOP_REGISTER_NOTIFY</constant>:</para>
+
+                <para>The sequence number identifies the session.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0107
+                (<constant>REQUEST_STOP_ALL_REGISTER_NOTIFY</constant>)</para>
+
+                <para>The sequence number identifies the session.</para>
+              </listitem>
+            </itemizedlist>
+          </callout>
+        </calloutlist>
+
+        <para>If the request has parameters, they are streamed as described
+        below and will directly follow the generic request data.</para>
+      </section>
+
+      <section>
+        <title>Responses, informations and attributes (Cmd:
+        DataResponse)</title>
+
+        <para>All response messages contain the following data (preceded by the
+        <acronym>DSI</acronym> header):</para>
+
+        <programlisting>{
+   uint16, // service interface major version 
+   uint16, // service interface minor version
+   uint32, // response type <co id="co_responseType" />
+   uint32, // response id   <co id="co_responseId" />
+   int32   // sequence number  <co id="co_responeSeqNo" />
+}</programlisting>
+
+        <calloutlist>
+          <callout arearefs="co_responseType">
+            <para>The following response types are currently defined
+            (<constant>0x00</constant>-<constant>0xFF</constant> are reserved
+            for internal use):</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>0x0200 (RESULT_OK)</para>
+
+                <para>The response method of a request has been called, the
+                <methodname>error</methodname> method wasn't called. Response
+                parameters follow.</para>
+
+                <para>The message is also used for informations.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0201 (RESULT_INVALID)</para>
+
+                <para>The <function><methodname>error</methodname></function>
+                method was called with a result method ID as argument. An int32
+                error code follows.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0202 (RESULT_DATA_OK)</para>
+
+                <para>A data attribute has been updated, the new value
+                follows.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0203 (RESULT_DATA_INVALID)</para>
+
+                <para>A data attribute has been marked as invalid, the old value
+                is preserved – only the status changes. An int32 error code
+                follows.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0204 (RESULT_REQUEST_ERROR)</para>
+
+                <para>The <methodname>error</methodname> method was called with
+                a request method ID as argument. An int32 error code
+                follows.</para>
+              </listitem>
+
+              <listitem>
+                <para>0x0205 (RESULT_REQUEST_BUSY)</para>
+
+                <para>A call to this request has already been received, but the
+                response has not yet been made. The server is busy working on
+                the same request. No data follows.</para>
+              </listitem>
+            </itemizedlist>
+          </callout>
+
+          <callout arearefs="co_responseId">
+            <para>The response ID is interface specific and identifies an
+            attribute, request or response/information. The allowed kind of ID
+            depends on the response type.</para>
+          </callout>
+
+          <callout arearefs="co_responeSeqNo">
+            <para>The sequence number is used for session handling and/or to
+            assign a response to a request.</para>
+          </callout>
+        </calloutlist>
+
+        <para>If the response has parameters, they are streamed as described
+        above and will directly follow the generic response data.</para>
+
+        <para>If error codes are not provided for the service interface in use,
+        <errorcode>0x7FFFFFFF</errorcode>
+        (<errorcode>ERROR_CODE_UNDEFINED</errorcode>) is used as error code
+        value.</para>
+      </section>
+
+      <section>
+        <title>Service interface ID handling</title>
+
+        <para>This section describes how the generator assigns IDs to
+        methods/attributes based on the information found in an
+        <filename>*.hbsi</filename> file. The following ranges have been defined
+        for update IDs:</para>
+
+        <itemizedlist spacing="compact">
+          <listitem>
+            <para><constant>0x00000000u</constant>-<constant>0x7FFFFFFFu</constant>:
+            For request IDs</para>
+          </listitem>
+
+          <listitem>
+            <para><constant>0x80000000u</constant>-<constant>0xBFFFFFFFu</constant>:
+            For response/information IDs</para>
+          </listitem>
+
+          <listitem>
+            <para><constant>0xC0000000u</constant>-<constant>0xFFFFFFFFu</constant>:
+            For attribute IDs</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>The service interface editor uses increasing IDs for methods and
+        attributes. There may be gaps, but newer methods always have higher IDs
+        so that new elements will never reuse a previously used ID. The service
+        interface generator sorts the methods by their IDs in ascending order
+        and then assigns IDs based on the ranges described above. And here an
+        example:</para>
+
+        <programlisting>Elements defined in an <filename>.hbsi</filename> file:
+
+requestA: ID=4
+requestB: ID=2
+responseA: ID=23
+informationA: ID=24
+attributeA: ID=12
+attributeB: ID=13
+
+Generated IDs:
+
+<constant>0x00000000u</constant>: requestB
+<constant>0x00000001u</constant>: requestA
+<constant>0x80000000u</constant>: responseA
+<constant>0x80000001u</constant>: informationA
+<constant>0xC0000000u</constant>: attributeA
+<constant>0xC0000001u</constant>: attributeB
+</programlisting>
+      </section>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Data serialization</title>
+
+    <para>This section describes how the actual data is serialized and
+    deserialized. All alignment values in this section are relative to the
+    beginning of the data section of the buffer. The data section must begin on
+    a 8-byte alignment in memory.</para>
+
+    <section>
+      <title>Primitive data types</title>
+
+      <para>All data types are transmitted in little endian byte order. In order
+      to allow primitive data types to be moved into and out of the data stream
+      with instructions specifically designed for these types, all data types
+      must be aligned to their natural boundaries. The following tables show the
+      sizes and alignments of the primitive data types. If necessary, padding
+      bytes must be inserted into the stream so that the next primitive data
+      type hits the correct boundary. The value of the padding byte is not
+      defined.</para>
+
+      <section>
+        <title>Integer Data Types</title>
+
+        <table>
+          <title>Size and alignment requirements for integer data types</title>
+
+          <tgroup cols="3">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">Type</emphasis></entry>
+
+                <entry><emphasis role="bold">Size [bytes]</emphasis></entry>
+
+                <entry><emphasis role="bold">Alignment
+                [bytes]</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>byte/char</entry>
+
+                <entry>1</entry>
+
+                <entry>1</entry>
+              </row>
+
+              <row>
+                <entry>signed/unsigned short</entry>
+
+                <entry>2</entry>
+
+                <entry>2</entry>
+              </row>
+
+              <row>
+                <entry>signed/unsigned int</entry>
+
+                <entry>4</entry>
+
+                <entry>4</entry>
+              </row>
+
+              <row>
+                <entry>signed/unsigned long long</entry>
+
+                <entry>8</entry>
+
+                <entry>8</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+
+      <section>
+        <title>Floating Point Types</title>
+
+        <para>The format of floating point data types (float and double) follow
+        the IEEE standard formats for floating point numbers.</para>
+
+        <table>
+          <title>Size and alignment requirements for floating point data
+          types</title>
+
+          <tgroup cols="3">
+            <tbody>
+              <row>
+                <entry><emphasis role="bold">Type</emphasis></entry>
+
+                <entry><emphasis role="bold">Size [bytes]</emphasis></entry>
+
+                <entry><emphasis role="bold">Alignment
+                [bytes]</emphasis></entry>
+              </row>
+
+              <row>
+                <entry>float</entry>
+
+                <entry>4</entry>
+
+                <entry>4</entry>
+              </row>
+
+              <row>
+                <entry>double</entry>
+
+                <entry>8</entry>
+
+                <entry>8</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+
+      <section>
+        <title>Boolean Type</title>
+
+        <para>Boolean data is encoded as a single integer value. For the boolean
+        value <constant>false</constant>, the integer value is set to
+        <constant>0</constant>. For a boolean value <constant>true</constant>,
+        the integer value is set to <constant>1</constant>.</para>
+      </section>
+
+      <section>
+        <title>Enumeration Type</title>
+
+        <para>An enumeration value is encoded as a single integer value. The
+        enumeration value is simply mapped to the integer value.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>String Type</title>
+
+      <para>A string is encoded as an unsigned integer indicating the length of
+      the string in bytes including the NULL termination. An empty string has
+      the length <constant>1</constant> followed by the NULL termination. A NULL
+      string has the length <constant>0</constant>. No NULL termination is
+      written to the stream for a NULL string.</para>
+
+      <table>
+        <title>Streaming schema for type <type>String</type></title>
+
+        <tgroup cols="6">
+          <tbody>
+            <row>
+              <entry><varname>length</varname></entry>
+
+              <entry><varname>byte[0]</varname></entry>
+
+              <entry><varname>byte[1]</varname></entry>
+
+              <entry>...</entry>
+
+              <entry><varname>byte[length-1]</varname></entry>
+
+              <entry><constant>'\0'</constant></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>Array Type</title>
+
+      <para>An array is encoded as an unsigned integer indicating the number of
+      elements of the array followed by a sequence of elements of arbitrary
+      types. All elements in the sequence must be of the same type.</para>
+
+      <table>
+        <title>Streaming schema for array types</title>
+
+        <tgroup cols="6">
+          <tbody>
+            <row>
+              <entry><varname>length</varname></entry>
+
+              <entry><constant>0</constant>...<constant>n</constant> padding
+              bytes</entry>
+
+              <entry><varname>element[0]</varname></entry>
+
+              <entry><varname>element[1]</varname></entry>
+
+              <entry>...</entry>
+
+              <entry><varname>element[length-1]</varname></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>Compound types (<type>struct</type>)</title>
+
+      <para>There is no extra serialization information for structures in the
+      DSI protocol. The members of a struct are encoded in the order they appear
+      in the struct declaration as they were a sequence of elements of primitive
+      data types, strings or arrays. If the alignment and data sizes of the
+      underlaying hardware match the DSI protocol specification and a struct
+      only consists of primitive data types, a struct could be written to the
+      output stream using a single memcpy for performance reasons.</para>
+    </section>
+
+    <section>
+      <title>Variant</title>
+
+      <para>A variant is encoded by an unsigned integer (type id) indicating the
+      type the variant is holding at the moment followed by the data of the
+      current type. The type id is a number starting with 1 for the first type
+      in the variant. The second type has the type id 2, and so on.</para>
+    </section>
+
+    <section>
+      <title>Argument lists</title>
+
+      <para>The arguments are encoded in the order they appear in the
+      request/response/information declaration from left to right. The argument
+      list for e.g.
+      <methodname>requestA(int32,bool,Array&lt;String&gt;,int64)</methodname> is
+      encoded as:</para>
+
+      <itemizedlist spacing="compact">
+        <listitem>
+          <para>encode int32</para>
+        </listitem>
+
+        <listitem>
+          <para>encode bool</para>
+        </listitem>
+
+        <listitem>
+          <para>encode Array&lt;String&gt;</para>
+        </listitem>
+
+        <listitem>
+          <para>encode int64</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Each argument is encoded with its specific alignment.</para>
+    </section>
+  </chapter>
+</book>

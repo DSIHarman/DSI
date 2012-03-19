@@ -1,0 +1,17 @@
+digraph dsi_message
+{ 
+   node [shape=record]; 
+   rankdir=LR;
+
+   message [label="<f0> IPC header|<f1> IPC command data"];
+   ipc_header [label="magic|protoMajor|protoMinor|serverID|clientID|<f0> command|flags|packetLength|reserved"];
+
+   ipc_command [ style = "filled" penwidth = 1 fillcolor = "white" fontname = "Courier New" shape = "Mrecord" label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td align="left">ConnectRequest,</td></tr><tr><td align="left">ConnectResponse,</td></tr><tr><td align="left">DisconnectRequest</td></tr></table>> ];
+   ipc_command_data_qnx [label="pid | channel"];
+   ipc_command_data_tcp [label="ipAddress | port"];
+
+   message:f0 -> ipc_header;
+   message:f1 -> ipc_command_data_qnx [label="QNX"];
+   message:f1 -> ipc_command_data_tcp [label="TCP"];  
+   ipc_header:f0 -> ipc_command;
+}

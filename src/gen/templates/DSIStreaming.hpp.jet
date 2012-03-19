@@ -1,0 +1,61 @@
+<%@jet
+
+   class    = "DSI_Streaming_HPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   Method[] methods = si.getMethods();
+   Value[] attributes = si.getAttributes();
+   DataType[] dataTypes = si.getDataTypes();
+   String[] extraIncludes = (String[])  context.getObjectParameter("ExtraIncludes");
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+
+   String defineName = "DSI_" + si.getName().toUpperCase() + "_STREAMING_HPP" ;
+
+   OUTPUTFILE( "DSI" + si.getName() + "Stream.hpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+#ifndef <%= defineName %>
+#define <%= defineName %>
+
+#include "dsi/private/attributes.hpp"
+#include "dsi/Streaming.hpp"
+<% for( String include : extraIncludes ) { %>
+#include "<%= include %>"
+<% } %>
+<% for( String include : ServiceInterface.getDSIIncludes() ) { %>
+#include "<%= include.replaceAll("\\.hpp", "Stream.hpp") %>"
+<% } %>
+
+<% for( DataType dataType : dataTypes ) { %>
+<% if( dataType.isStructure() ) { %>
+
+inline 
+DSI::COStream& operator<< (DSI::COStream& ostream, const <%= dataType.getDSIBindingName(true) %>& s)
+{   
+   return ostream
+   <% for( Value field : dataType.getFields() ) { %>   
+      << s.<%= field.getName() %>   
+   <% } %>
+      ;
+}
+
+
+inline 
+DSI::CIStream& operator>> (DSI::CIStream& istream, <%= dataType.getDSIBindingName(true) %>& s)
+{
+   return istream
+   <% for( Value field : dataType.getFields() ) { %>
+      >> s.<%= field.getName() %>   
+   <% } %>   
+      ;
+}
+
+<% } /*if...*/ %>
+<% } /*for*/ %>
+
+#endif // <%= defineName %>

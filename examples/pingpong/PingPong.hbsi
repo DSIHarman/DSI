@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="no"?>
+<DSI>
+   <Name>PingPong</Name>
+   <ID>1604200</ID>
+   <Extern>true</Extern>
+   <Version>
+      <Major>0</Major>
+      <Minor>2</Minor>
+   </Version>
+   <DataTypes/>
+   <Methods>
+      <Method>
+         <Name>ping</Name>
+         <ID>1604208</ID>
+         <Type>Request</Type>
+         <Response>pong</Response>
+         <Parameters>
+            <Parameter>
+               <Name>message</Name>
+               <ID>1604212</ID>
+               <Type>String</Type>
+               <IsDefault>false</IsDefault>
+            </Parameter>
+         </Parameters>
+      </Method>
+      <Method>
+         <Name>pong</Name>
+         <ID>1604210</ID>
+         <Type>Response</Type>
+         <Parameters>
+            <Parameter>
+               <Name>message</Name>
+               <ID>1604214</ID>
+               <Type>String</Type>
+               <IsDefault>false</IsDefault>
+            </Parameter>
+         </Parameters>
+      </Method>
+   </Methods>
+   <Attributes/>
+</DSI>

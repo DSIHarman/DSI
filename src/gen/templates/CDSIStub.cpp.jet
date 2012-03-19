@@ -1,0 +1,296 @@
+ <%@jet
+
+   class    = "CDSIStub_CPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   Method[] responseMethods = si.getResponseMethods();
+   Method[] requestMethods = si.getRequestMethods();
+   Value[] attributes = si.getAttributes();
+   String classname = "C" + si.getName() + "DSIStub" ;
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+
+   OUTPUTFILE( classname + ".cpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+
+
+#include "<%= classname %>.hpp"
+#include "dsi/CIStream.hpp"
+#include "dsi/COStream.hpp"
+#include "dsi/private/CRequestHandle.hpp"
+#include "dsi/private/util.hpp"
+
+#include <assert.h>
+
+
+using namespace <%= si.getName() %> ;
+
+<%= classname %>::<%= classname %>( const char* rolename, bool enableTCPIP )
+ : DSI::CServer( SERVICE_NAME, rolename, MAJOR_VERSION, MINOR_VERSION, enableTCPIP )
+{
+   // NOOP
+}
+
+
+<%= classname %>::~<%= classname %>()
+{
+   // NOOP
+}
+
+
+void <%= classname %>::processRequest( DSI::Private::CDataRequestHandle &handle )
+{
+<% if( 0 != requestMethods.length ) { %>
+   UpdateIdEnum requestId = (UpdateIdEnum)handle.getRequestId();
+
+   DSI::CIStream istream(handle.payload(), handle.size());
+
+<% if( 0 != requestMethods.length ) { %>
+   switch( requestId )
+   {
+<% for( Method method : requestMethods ) { %>
+   case <%= method.getDSIUpdateIdName( true ) %>:
+      {
+         <% if( method.isRegister()  || method.isUnregister() ) { %>
+         mSessionId = findSessionId( handle.getSequenceNumber(), mClientID );
+         <% } %>
+
+         <% if( method.isUnregister() ) { %>
+         if( DSI::INVALID_SESSION_ID != mSessionId )
+         {
+            <%= method.getMethodName() %>( mSessionId );
+            removeSession( mSessionId );
+         }
+
+         <% } else { %>
+         <% if( method.isRegister()) { %>
+         if( DSI::INVALID_SESSION_ID == mSessionId )
+         {
+                  SessionData sd ;
+                  sd.sessionId = DSI::createId();
+                  sd.clientID = mClientID ;
+                  sd.sequenceNr = handle.getSequenceNumber();
+                  mSessions.push_back( sd );
+
+         }
+		 <% } %>
+         <% for( Value parameter : method.getParameters() ) { %>
+         <%= parameter.getDataType().getDSIBindingName( si ) %> <%= parameter.getName() + parameter.getDataType().getInitializer(" = ") %> ;
+         <% } %>
+         <% for( Value parameter : method.getParameters() ) { %>
+         istream >> <%= parameter.getName() %>;
+         <% } %>
+         if( ( ERANGE != istream.getError() ) && ( 0 == istream.getError() )) // bad streaming data?
+         {
+            <%= method.getMethodName() + "( " + helper.getArgumentList( method, false, false, false ) %> );
+         }
+         <% } %>
+
+         <% if( method.isRegister()  || method.isUnregister() ) { %>
+         mSessionId = DSI::INVALID_SESSION_ID ;
+         <% } %>
+      }
+      break;
+
+<% } %>
+   default:
+      break;
+   }
+<% } %>
+<% } %>
+}
+
+<% for( Method method : responseMethods ) { %>
+<%= helper.createMethodDeclaration( method, si, classname, false, null ) %>
+{
+   mResponseStateMap[(uint32_t)<%= method.getDSIUpdateIdName( false ) %>] = false ;
+
+   for( int32_t idx=mNotifications.size()-1; idx>=0; idx-- )
+   {
+      if(  mNotifications[idx].notifyID == (uint32_t) <%= method.getDSIUpdateIdName( false ) %>
+        && (mNotifications[idx].sessionId == DSI::INVALID_SESSION_ID
+        || isSessionActive( mNotifications[idx].sessionId )))
+      {
+         ClientConnection* conn = findClientConnection(mNotifications[idx].clientID);
+         if (conn && !conn->channel.expired())
+         {
+            DSI::CRequestWriter writer( *conn->channel.lock()
+                                 , DSI::RESULT_OK
+                                 , DSI::DataResponse
+                                 , mNotifications[idx].notifyID
+                                 , mNotifications[idx].sequenceNr
+                                 , mNotifications[idx].clientID
+                                 , conn->serverID
+                                 , conn->protoMinor);
+
+            <% if(method.getParameters().length != 0) { %>
+            DSI::COStream ostream(writer);
+            ostream
+            <% for( Value parameter : method.getParameters() ) { %>
+               << <%= parameter.getName() %>
+            <% } %>
+               ;
+            <% } %>
+
+            (void)writer.flush();
+
+            if( DSI::INVALID_SEQUENCE_NR != mNotifications[idx].sequenceNr
+             && DSI::INVALID_SESSION_ID == mNotifications[idx].sessionId )
+            {
+               // one shot notification
+               mNotifications.erase( mNotifications.begin() + idx );
+            }
+         }
+      }
+   }
+   if (mResponseId == <%= method.getDSIUpdateIdName( false ) %>)
+   {
+         mResponseId = DSI::INVALID_ID;
+   }
+}
+
+<% } %>
+
+DSI::DataStateType <%= classname %>::getAttributeState( uint32_t id )
+{
+   DSI::DataStateType state = DSI::DATA_NOT_AVAILABLE ;
+<% if( 0 != (attributes.length +1 )) { %>
+   switch( (UpdateIdEnum)id )
+   {
+<% for( Value attribute : attributes ) { %>
+   case <%= attribute.getDSIUpdateIdName( false ) %>:
+      state = <%= attribute.getDSIBindingName() %>.mState;
+      break;
+
+<% } %>
+   case UPD_ID_implVersion:
+      state = DSI::DATA_NOT_AVAILABLE ;
+      break;
+   default:
+      assert(false);
+      break;
+   }
+<% } %>
+   return state ;
+}
+
+
+void <%= classname %>::setAttributeState(uint32_t id, DSI::DataStateType <%= attributes.length > 0 ? "state":"" %>)
+{
+<% if( 0 != (attributes.length +1) ) { %>
+   switch( (UpdateIdEnum)id )
+   {
+<% for( Value attribute : attributes ) { %>
+   case <%= attribute.getDSIUpdateIdName( false ) %>:
+      <%= attribute.getDSIBindingName() %>.setState(state);
+      break;
+
+<% } %>
+   case UPD_ID_implVersion:
+      break;
+   default:
+      assert(false);
+      break;
+   }
+<% } %>
+}
+
+uint32_t <%= classname %>::getResponse( uint32_t requestId )
+{
+<% if( si.hasRequestWithResponse() ) { %>
+   static const UpdateIdEnum responseTable[] =
+   {
+      <% for( Method method : requestMethods ) { %>
+      <% if( method.hasResponse() ) { %>
+      <%= si.getResponseMethod( method.getResponse() ).getDSIUpdateIdName( false ) %>,
+      <% } else { %>
+      UPD_ID_NOP,
+      <% } %>
+      <% } %>
+   };
+   return (requestId<sizeof(responseTable)/sizeof(responseTable[0])) ? (uint32_t)responseTable[requestId] : DSI::INVALID_ID ;
+<% } else { %>
+   return DSI::INVALID_ID ;
+<% } %>
+}
+
+bool <%= classname %>::getResponseState( uint32_t responseId )
+{
+   return mResponseStateMap[responseId] ;
+}
+
+void <%= classname %>::setResponseState( uint32_t responseId, bool value )
+{
+   mResponseStateMap[responseId] = value ;
+}
+
+void <%= classname %>::writeAttribute(uint32_t id, DSI::COStream& ostream, DSI::UpdateType type, int16_t position, int16_t count)
+{
+   // get rid of compiler warnings
+   (void)id;
+   (void)ostream;
+   (void)type;
+   (void)position;
+   (void)count;
+
+<% if( 0 != attributes.length ) { %>
+   switch( (UpdateIdEnum)id )
+   {
+<% for( Value attribute : attributes ) { %>
+   case <%= attribute.getDSIUpdateIdName( false ) %>:
+      <% if( attribute.notifyPartial() ) { %>
+      DSI::Private::writePartialAttribute(ostream, <%= attribute.getDSIBindingName() %>.mValue, type, position, count);
+      <% } else { %>
+      ostream << <%= attribute.getDSIBindingName() %>;
+      <% } %>
+      break;
+
+<% } %>
+   default:
+      assert(false);
+      break;
+   }
+<% } %>
+}
+
+void <%= classname %>::sendError( UpdateIdEnum id<%= si.hasErrorEnum() ? (", " + si.getName() + "::Error err") : "" %> )
+{
+   if( DSI::isAttributeId( (uint32_t)id ))
+   {
+      if( DSI::DATA_INVALID != getAttributeState( (uint32_t)id ))
+      {
+         setAttributeState( (uint32_t)id, DSI::DATA_INVALID );
+         sendNotification( (uint32_t)id );
+      }
+   }
+   else
+   {
+      DSI::ResultType typ ;
+      uint32_t responseId = id;
+      if( DSI::isResponseId( (int32_t)id ))
+      {
+         typ = DSI::RESULT_INVALID;
+      }
+      else
+      {
+         typ = DSI::RESULT_REQUEST_ERROR;
+         responseId = getResponse( (int32_t)id );
+      }
+      if( DSI::INVALID_ID != responseId )
+      {
+         mResponseStateMap[responseId] = false ;
+         sendResponse(responseId, id, typ<%= si.hasErrorEnum() ? (", (uint32_t*)&err") : "" %>);
+      }
+   }
+}
+
+const char* <%= classname %>::getUpdateIDString( uint32_t updateId ) const
+{
+   return <%= si.getName() %>::toString( (<%= si.getName() %>::UpdateIdEnum)updateId );
+}
+

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+  <title>DSI IDL</title>
+
+  <subtitle>Version 0.1</subtitle>
+
+  <bookinfo>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" contentwidth="50mm"
+                   fileref="figures/DSILogo.svg" format="SVG" />
+      </imageobject>
+    </mediaobject>
+
+    <corpname>Harman/Becker Automotive Systems GmbH</corpname>
+
+    <address>Becker-Göring-Straße 16, 76307 Karlsbad, Germany</address>
+
+    <date>December 2011</date>
+
+    <authorgroup>
+      <author>
+        <firstname>Florentin</firstname>
+
+        <surname>Picioroaga <ulink
+        url="mailto:Florentin.Picioroaga@harman.com">Florentin.Picioroaga@harman.com</ulink></surname>
+      </author>
+    </authorgroup>
+
+    <editor>
+      <firstname>Florentin</firstname>
+
+      <surname>Picioroaga <ulink
+      url="mailto:Florentin.Picioroaga@harman.com">Florentin.Picioroaga@harman.com</ulink></surname>
+    </editor>
+
+    <pubdate>21.12.2011</pubdate>
+
+    <releaseinfo>Draft</releaseinfo>
+
+    <copyright>
+      <year>2011</year>
+
+      <holder>Harman International Industries, Inc.</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>This document is part of the DSI IPC open source software and is
+      licensed under the Mozilla Public License v2.0</para>
+    </legalnotice>
+
+    <revhistory>
+      <revision>
+        <revnumber>0.1</revnumber>
+
+        <date>December, 2011</date>
+
+        <authorinitials>FPicioroaga</authorinitials>
+
+        <revdescription>
+          <para>Initial version</para>
+        </revdescription>
+      </revision>
+    </revhistory>
+  </bookinfo>
+
+  <preface>
+    <title>Document overview</title>
+
+    <para><glossterm>DSI</glossterm>(Distributed Service Interface) is an
+    inter-process communication (<glossterm>IPC</glossterm>) used in current
+    HARMAN products.</para>
+
+    <para>This document is part of a documentation package comprising
+    <acronym>DSI</acronym> and focuses only on the interface description
+    language (<glossterm>IDL</glossterm>) used to formally describe application
+    interfaces. Other parts of the documentation package are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>inter-process communication (<acronym>IPC</acronym>) protocol
+        describing the data serialization and the <acronym>DSI</acronym>
+        protocol</para>
+      </listitem>
+
+      <listitem>
+        <para>language binding, using <acronym>DSI</acronym> in different
+        programming languages or frameworks e.g. HARMAN component based
+        framework <glossterm>MoCCA</glossterm> (Modular Car Computing
+        Architecture)</para>
+      </listitem>
+
+      <listitem>
+        <para>Service Broker, creating an environment where applications can
+        dynamically find services in the system</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The document is organized in the following chapters:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Introduction</para>
+
+        <para>In this chapter an overview of the <acronym>DSI</acronym>
+        <acronym>IPC</acronym> is presented and the basic principles are
+        explained</para>
+      </listitem>
+
+      <listitem>
+        <para>Interface Description Language</para>
+
+        <para>The main chapter explaining the <acronym>IDL</acronym> features
+        available in <acronym>DSI</acronym>.</para>
+      </listitem>
+    </orderedlist>
+  </preface>
+
+  <xi:include href="Introduction.xml" xpointer="element(/1)"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="IDL.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="Appendix.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <glossary role="auto">
+    <glossdiv>
+      <title>Dummy Glossdiv</title>
+
+      <glossentry>
+        <glossterm>Dummy Glossary Entry</glossterm>
+
+        <glossdef>
+          <para>If you can see this, the document was processed
+          incorrectly.</para>
+        </glossdef>
+      </glossentry>
+    </glossdiv>
+  </glossary>
+</book>

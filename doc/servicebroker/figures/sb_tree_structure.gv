@@ -1,0 +1,57 @@
+/*
+Author: Florentin Picioroaga
+To generate the image use:
+ cat sb_tree_structure.gv |dot -Tpng > sb_tree_structure.png
+*/
+
+graph G {
+        node [style=filled, color="#F4E500"];
+        Master1;
+        Master2;
+        Slave1;
+        Slave2;
+
+        node [style=filled, color="#CFD2F9"];
+        Service1; 
+        Service2;
+        Service3;
+        Client1;
+        Client2;
+	
+        subgraph cluster_0 {
+                shape=box;
+                style=filled;
+                color="#E0E9E2";
+	        Master1 -- Service1;
+		label = "CPU #1";
+	}
+
+	subgraph cluster_1 {
+                style=filled;
+                color="#E0E9E2";
+	        Master2;
+		label = "CPU #2";
+	}
+
+	subgraph cluster_2 {
+                style=filled;
+                color="#E0E9E2";
+	        Slave1 -- Service2;
+	        Slave1 -- Client1;
+		label = "CPU #3";
+	}
+	
+        subgraph cluster_3 {
+                style=filled;
+                color="#E0E9E2";
+	        Slave2 -- Service3;
+	        Slave2 -- Client2;
+                Service3 -- Client2 [style=bold, color=blue, label="DSI", constraint=false];
+		label = "CPU #4";
+	}
+        
+        Master1 -- Master2;
+        Master2 -- Slave1;
+        Master2 -- Slave2;
+        Service1 -- Client1 [style=bold, color=blue, label="DSI"];
+}

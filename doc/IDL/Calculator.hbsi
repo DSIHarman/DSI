@@ -1,0 +1,365 @@
+<DSI>
+  <Name>Calculator</Name>
+  <ID>1</ID>
+  <Description>This is a calculator interface used as an example to understand DSI IDL.</Description>
+  <Extern>true</Extern>
+  <Version>
+    <Major>2</Major>
+    <Minor>0</Minor>
+  </Version>
+  <DataTypes>
+    <DataType>
+      <Name>THistoryEntry</Name>
+      <ID>31</ID>
+      <Description>Data structure used to build the calculator history
+        of operations.</Description>
+      <Kind>Structure</Kind>
+      <Fields>
+        <Field>
+          <Name>date</Name>
+          <ID>32</ID>
+          <Description>The date the operation was executed on the
+            calculator.</Description>
+          <DefaultValue />
+          <Type>String</Type>
+        </Field>
+        <Field>
+          <Name>operation</Name>
+          <ID>33</ID>
+          <Description>The operation as string.</Description>
+          <DefaultValue />
+          <Type>String</Type>
+        </Field>
+      </Fields>
+    </DataType>
+    <DataType>
+      <Name>THistory</Name>
+      <ID>34</ID>
+      <Description>The history of operations executed on the calculator.
+      </Description>
+      <Kind>Typedef</Kind>
+      <Container>Vector</Container>
+      <BaseType>THistoryEntry</BaseType>
+    </DataType>
+  </DataTypes>
+  <Enums>
+    <Enum>
+      <Name>EBase</Name>
+      <ID>35</ID>
+      <Description>Numeric base the calculator can work with.
+      </Description>
+      <EnumIDs>
+        <EnumID>
+          <Name>BASE_UNDEFINED</Name>
+          <ID>39</ID>
+          <Description>Value used to detect an uninitialized parameter
+            sent by the client.</Description>
+          <Value>0</Value>
+        </EnumID>
+        <EnumID>
+          <Name>BASE_DECIMAL</Name>
+          <ID>36</ID>
+          <Description>The decimal base.</Description>
+          <Value>1</Value>
+        </EnumID>
+        <EnumID>
+          <Name>BASE_HEXADECIMAL</Name>
+          <ID>37</ID>
+          <Description>The hexadecimal base.</Description>
+          <Value>2</Value>
+        </EnumID>
+        <EnumID>
+          <Name>BASE_BINARY</Name>
+          <ID>38</ID>
+          <Description>The binary base.</Description>
+          <Value>3</Value>
+        </EnumID>
+      </EnumIDs>
+    </Enum>
+    <Enum>
+      <Name>EResult</Name>
+      <ID>40</ID>
+      <Description>Possible results for calculator operations.
+      </Description>
+      <EnumIDs>
+        <EnumID>
+          <Name>OP_SUCCESS</Name>
+          <ID>41</ID>
+          <Description>Last request on calculator was successfully
+            processed.</Description>
+          <Value>0</Value>
+        </EnumID>
+        <EnumID>
+          <Name>OP_ERROR</Name>
+          <ID>42</ID>
+          <Description>Last request on calculator was not properly
+            processed. No further information provided about the cause
+            of the failure.</Description>
+          <Value>1</Value>
+        </EnumID>
+        <EnumID>
+          <Name>OP_OUT_OF_BOUNDS</Name>
+          <ID>43</ID>
+          <Description>The result of the last computation is too large.
+          </Description>
+          <Value>2</Value>
+        </EnumID>
+        <EnumID>
+          <Name>OP_NULL_DIVISION</Name>
+          <ID>44</ID>
+          <Description>A division with null leads to this error.
+          </Description>
+          <Value>3</Value>
+        </EnumID>
+      </EnumIDs>
+    </Enum>
+  </Enums>
+  <Methods>
+    <Method>
+      <Name>add</Name>
+      <ID>8</ID>
+      <Description>Add operation. The result will be stored in the
+        currentValue attribute.</Description>
+      <Type>Request</Type>
+      <Response>operationResult</Response>
+      <Parameters>
+        <Parameter>
+          <Name>op1</Name>
+          <ID>9</ID>
+          <Description>The first operand to be added.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+        <Parameter>
+          <Name>op2</Name>
+          <ID>10</ID>
+          <Description>The second operand to be added.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>subtract</Name>
+      <ID>11</ID>
+      <Description>Subtract operation.</Description>
+      <Type>Request</Type>
+      <Response>operationResult</Response>
+      <Parameters>
+        <Parameter>
+          <Name>op1</Name>
+          <ID>12</ID>
+          <Description>The operand to be subtracted from.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+        <Parameter>
+          <Name>op2</Name>
+          <ID>13</ID>
+          <Description>The value to be subtracted.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>multiply</Name>
+      <ID>22</ID>
+      <Description>Multiply operation.</Description>
+      <Type>Request</Type>
+      <Response>operationResult</Response>
+      <Parameters>
+        <Parameter>
+          <Name>op1</Name>
+          <ID>23</ID>
+          <Description>The first operand to be multiplied.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+        <Parameter>
+          <Name>op2</Name>
+          <ID>24</ID>
+          <Description>The second operand to be multiplied.
+          </Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>divide</Name>
+      <ID>25</ID>
+      <Description>Divide operation having as first operand the
+        currentValue and the second operand as parameter.</Description>
+      <Type>Request</Type>
+      <Response>operationResult</Response>
+      <Parameters>
+        <Parameter>
+          <Name>op1</Name>
+          <ID>26</ID>
+          <Description>The first operand to be divided from.
+          </Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+        <Parameter>
+          <Name>op2</Name>
+          <ID>27</ID>
+          <Description>The divider operand.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>operationResult</Name>
+      <ID>19</ID>
+      <Description>Common information indicating the result of the last
+        request that does a computation on the calculator: add,
+        substract.</Description>
+      <Type>Response</Type>
+      <Parameters>
+        <Parameter>
+          <Name>result</Name>
+          <ID>20</ID>
+          <Description>The result of the operation.</Description>
+          <Type>Double</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+        <Parameter>
+          <Name>error</Name>
+          <ID>21</ID>
+          <Description>Error code for the operation.</Description>
+          <Type>EResult</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>changeBase</Name>
+      <ID>14</ID>
+      <Description>Change the GUI representation numerical base for
+        input/output. On success the base attribute will be changed.
+      </Description>
+      <Type>Request</Type>
+      <Parameters>
+        <Parameter>
+          <Name>newBase</Name>
+          <ID>15</ID>
+          <Description>The new base.</Description>
+          <Type>EBase</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>risingValue</Name>
+      <ID>4</ID>
+      <Description>Using filters on the server side. The client can
+        register to get an information when the currentValue gets over
+        the highWatermark parameter.&#13;
+        The filter is applied on the
+        server, this avoids traffic i.e. sending
+        all the values and
+        filter them on the client side.</Description>
+      <Type>Register</Type>
+      <Parameters>
+        <Parameter>
+          <Name>highWatermark</Name>
+          <ID>5</ID>
+          <Description>In case the currenValue rise above this watermark
+            the clients will receive the risingValue information.
+          </Description>
+          <Type>Int32</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>risingValue</Name>
+      <ID>6</ID>
+      <Type>UnRegister</Type>
+    </Method>
+    <Method>
+      <Name>risingValue</Name>
+      <ID>7</ID>
+      <Description>This information is sent while the high watermark is
+        exceeded.</Description>
+      <Type>Information</Type>
+      <Parameters>
+         <Parameter>
+            <Name>value</Name>
+            <ID>48</ID>
+            <Description>The current value.</Description>
+            <Type>Int32</Type>
+            <IsDefault>false</IsDefault>
+         </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>getHistory</Name>
+      <ID>16</ID>
+      <Description>Get the history of operations run on the calculator.
+        An example that uses a compound data type.</Description>
+      <Type>Request</Type>
+      <Parameters>
+         <Parameter>
+            <Name>numberOfEntries</Name>
+            <ID>45</ID>
+            <Description>The last entries from the history to get. If null then the whole history is retrieved.</Description>
+            <Type>UInt32</Type>
+            <IsDefault>true</IsDefault>
+            <DefaultValue>0</DefaultValue>
+         </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+      <Name>getHistoryResult</Name>
+      <ID>17</ID>
+      <Description>The result of the getHistory request.</Description>
+      <Type>Response</Type>
+      <Parameters>
+        <Parameter>
+          <Name>history</Name>
+          <ID>18</ID>
+          <Description>The history of the operations.</Description>
+          <Type>THistory</Type>
+          <IsDefault>false</IsDefault>
+        </Parameter>
+      </Parameters>
+    </Method>
+    <Method>
+       <Name>historyChanged</Name>
+       <ID>49</ID>
+       <Description>The history changed because a new request was processed by the server.</Description>
+       <Type>Information</Type>
+       <Parameters>
+          <Parameter>
+             <Name>size</Name>
+             <ID>50</ID>
+             <Description>The current size of the history.</Description>
+             <Type>UInt32</Type>
+             <IsDefault>false</IsDefault>
+          </Parameter>
+       </Parameters>
+    </Method>
+  </Methods>
+  <Attributes>
+    <Attribute>
+      <Name>currentValue</Name>
+      <ID>2</ID>
+      <Description>State information, the result of the previous
+        operation executed on the calculator.</Description>
+      <Type>Double</Type>
+      <Notify>OnChange</Notify>
+    </Attribute>
+    <Attribute>
+      <Name>base</Name>
+      <ID>3</ID>
+      <Description>The base to be used on the GUI interface: user input,
+        calculator output.</Description>
+      <Type>EBase</Type>
+      <Notify>OnChange</Notify>
+    </Attribute>
+  </Attributes>
+</DSI>

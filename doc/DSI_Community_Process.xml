@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="DSI_CoLibry">
+  <sectioninfo>
+    <revhistory>
+      <revision>
+        <revnumber>0.1</revnumber>
+
+        <date>February 29th, 2012</date>
+
+        <authorinitials>MHaefner</authorinitials>
+
+        <revdescription>
+          <para>Initial version</para>
+        </revdescription>
+      </revision>
+    </revhistory>
+  </sectioninfo>
+
+  <title>DSI community process</title>
+
+  <para>This document will describe all entities and processes correlated to
+  the DSI publication. The goal is to provide a defined interface to
+  the community interested in DSI.</para>
+
+  <section>
+    <title>Roles</title>
+
+    <para>The following roles are part of any of the processes described
+    below: </para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">user</emphasis></para>
+
+        <para>A person that is using the DSI distribution but typically
+        has no deeper interest in the understanding of internals of the source
+        code.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">contributor</emphasis></para>
+
+        <para>Someone who wants to add a feature or bug fix, with or without
+        write access to the depot. </para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">collaborator</emphasis></para>
+
+        <para>A collaborator is a special kind of contributor who has write
+        access to the depot. The status of a collaborator may be given to any
+        contributor who has qualified himself e.g. by adding appropriate pull
+        requests. The core team members may pro-actively ask active
+        contributors to become collaborators.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">domain responsible</emphasis></para>
+
+        <para>The domain responsible is in authority for a certain piece of
+        software or any other distributable part of the depot. He has the last
+        word whether a certain change should happen within his domain or
+        not.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">inbox manager</emphasis></para>
+
+        <para>The inbox manager is responsible for handling all incoming
+        correspondence on the main account. These could typically be an
+        incoming pull request, a new issue or any other private message. The
+        role will typically alternate over all core team members on a certain
+        time interval.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">review manager</emphasis></para>
+
+        <para>The one that is responsible for a certain review request, he may
+        differ from the domain responsible. The role will somehow alternate
+        over all core team members for each single review. </para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">core team member</emphasis></para>
+
+        <para>A core team member is a main collaborator/developer of the DSI
+        software distribution. This role may be assigned to any
+        qualified collaborator.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Mailing lists</title>
+
+    <para>For interaction with our customers but also to provide transparency
+    of project decisions and to illustrate project progress the following
+    mailing lists will be applied:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">announcements</emphasis></para>
+
+        <para>This mailing list is dedicated to official announcements from
+        the core team (either by a domain responsible or a review manager).
+        This includes review kickoffs for new contributions or bug fixes and
+        corresponding acceptance or rejection mails. Formal releases are
+        announced in here.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">developers</emphasis></para>
+
+        <para>Highly technical discussions group mainly intended for
+        collaborators, but open to the public. This is the mailing list where
+        formal reviews take place. All technical discussions and derived
+        decisions will be available here.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">users</emphasis></para>
+
+        <para>Mailing list mainly intended for end-users where they can ask
+        how to implement or use a certain DSI feature.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Contributions</title>
+
+    <para>There are different types of contributions to the DSI
+    project. These include:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">feature requests</emphasis></para>
+
+        <para>Someone has an idea but no implementation yet. These could be
+        sent to the developers mailing list or added to the issue
+        tracker.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">feature additions</emphasis></para>
+
+        <para>Someone has implemented the feature in his local copy/fork of
+        the DSI repository. The contributor has to initiate a pull
+        request.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">bug reports</emphasis></para>
+
+        <para>Bug reports will be handled via the issue tracker. Users may
+        also send bug reports to the developers mailing list if they are not
+        sure whether the observed behaviour is correlated with a bug or
+        not.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">bug fixes</emphasis></para>
+
+        <para>The contributor may send a bug fix by initiating a pull
+        request.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Domains</title>
+
+    <para>This section presents a list of areas of responsibility within the
+    DSI depot. The assignment of domains to real persons may be subject
+    to change from time to time. The domain responsible may be one of the core
+    team members. The main domains are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>base classes</para>
+      </listitem>
+
+      <listitem>
+        <para>code generator</para>
+      </listitem>
+
+      <listitem>
+        <para>servicebroker</para>
+      </listitem>
+
+      <listitem>
+        <para>build system</para>
+      </listitem>
+
+      <listitem>
+        <para>unknown</para>
+      </listitem>
+
+      <listitem>
+        <para>any</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The domain names find again themselves in label names of the issue
+    tracker. Unknown and any are special domains that find themselves within
+    the label definitions of the issue tracking system.</para>
+  </section>
+
+  <section>
+    <title>Naming conventions</title>
+
+    <section>
+      <title>Branches</title>
+
+      <para>Branch names should easily allow to distinguish between branches
+      created for the implementation of a more complex feature request and
+      branches created for bug fixing. Therefore, such branches should start
+      with either <literal>feature_</literal> or <literal>bugfix_</literal>.
+      User branches may be created with the user's name prefixed, e.g.
+      <literal>mhaefner_</literal>.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Issue tracking</title>
+
+    <para>The hosting platform provided issue tracker will be used for
+    tracking both, bug reports and feature requests. Therefore, a set of
+    labels describing all the orthogonal characteristics will be implemented.
+    Each single group defines labels which mutually exclude themselves, but
+    labels from different groups may be combined. The labels include:</para>
+
+    <section>
+      <title>Type of issue</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>bug</para>
+        </listitem>
+
+        <listitem>
+          <para>optimization</para>
+        </listitem>
+
+        <listitem>
+          <para>quality improvement</para>
+        </listitem>
+
+        <listitem>
+          <para>feature</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Priority of issue</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>nice to have</para>
+        </listitem>
+
+        <listitem>
+          <para>low</para>
+        </listitem>
+
+        <listitem>
+          <para>medium</para>
+        </listitem>
+
+        <listitem>
+          <para>high</para>
+        </listitem>
+
+        <listitem>
+          <para>kernel panic</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Domain issue is related to</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>base classes</para>
+        </listitem>
+
+        <listitem>
+          <para>code generator</para>
+        </listitem>
+
+        <listitem>
+          <para>servicebroker</para>
+        </listitem>
+
+        <listitem>
+          <para>build system</para>
+        </listitem>
+
+        <listitem>
+          <para>unknown</para>
+        </listitem>
+
+        <listitem>
+          <para>any</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Example: A critical bug within the base classes will be labeled as
+      following: <literal>&lt;bug&gt; &lt;kernel panic&gt; &lt;base
+      classes&gt;</literal></para>
+    </section>
+  </section>
+
+  <section>
+    <title>Processes</title>
+
+    <section>
+      <title>New feature via incoming pull request</title>
+
+      <para>The inbox manager receives a pull request. He will assign the
+      request to an appropriate core team member, i.e. to the domain
+      responsible if he can easily determine him. The assignee will have a
+      discussion with the core developers and start a formal review.</para>
+    </section>
+
+    <section>
+      <title>Bug fix via incoming pull request</title>
+
+      <para>The inbox manager receives an adequate pull request. He will
+      assign it to the suitable domain responsible who then will check whether
+      we will accept the bug fix himself or start a formal review
+      process.</para>
+    </section>
+
+    <section>
+      <title>Internal bug fix by collaborators</title>
+
+      <para>Trivial bug fixes may be committed and merged directly by the
+      collaborator in the relevant branches. More complex bugs should be fixed
+      in separate bug fix branches and merged back to the main development
+      line when finished. Informing the domain responsible is self-evident.
+      </para>
+    </section>
+
+    <section>
+      <title> Formal review</title>
+
+      <para>Each review has a review manager assigned who is responsible for
+      generating invitations and controlling the review process itself. He has
+      to prepare the documents under review. The invitation is sent to the
+      announcements mailing list so anybody could join the review process.
+      Moreover, the review itself will be done on the developers mailing list
+      so any person outside of the DSI collaboration team may join the
+      discussions. A review has a finish date but the review period itself may
+      vary with the size of documents under review. After the review period
+      has elapsed the review manager will decide whether the changes under
+      review will be accepted or not or if some other work results from the
+      findings during the review.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Prerequisites for pull requests</title>
+
+    <para>Pull requests will only be accepted if the requestor pays an
+    adequate attention to the following points:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The cause of the pull request has to be clearly
+        documented.</para>
+      </listitem>
+
+      <listitem>
+        <para>The requestor must make sure that the current test suite still
+        works fine. If an existing test does no longer work as expected the
+        requestor may change the test and document why the change is
+        necessary. </para>
+      </listitem>
+
+      <listitem>
+        <para>For feature additions new tests have to be implemented.</para>
+      </listitem>
+
+      <listitem>
+        <para>Bug fixes should be documented by a proper test case.</para>
+      </listitem>
+
+      <listitem>
+        <para>Incompatible API changes or changes in dynamic behaviour have to
+        be clearly documented.</para>
+      </listitem>
+
+      <listitem>
+        <para>ABI changes have to be avoided as much as possible in order to
+        conserve library compatibility.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <?dbfo-need ht="220mm" ?>
+</section>

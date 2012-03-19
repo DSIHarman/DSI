@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="DSI_Introduction">
+  <title>Introduction</title>
+
+  <para>This chapter provides an introduction to the DSI IPC mechanism
+  explaining the basic concepts that are implemented in the protocol and which
+  an application needs to handle to connect to a DSI service.</para>
+
+  <section>
+    <title>Client/Server model</title>
+
+    <para>DSI IPC protocol is based on a server/client model where the server's
+    interface, aka the service interface, is described formally in an
+    <glossterm>XML</glossterm> based IDL and the client is the user of this
+    interface. The DSI was designed to be used in a component framework (MoCCA),
+    but is not restricted to that , where a component can implement and use
+    several service interfaces and can be easily deployed in different
+    application configurations.</para>
+  </section>
+
+  <section>
+    <title>Distributed communication</title>
+
+    <para>The DSI IPC was designed to be used in a distributed environment
+    allowing communication for all possible deployment configurations of the
+    client/server components :</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>in-process communication where client/server components are
+        deployed in the same process</para>
+      </listitem>
+
+      <listitem>
+        <para>in-node communication where client/server components are deployed
+        in different processes on the same CPU</para>
+      </listitem>
+
+      <listitem>
+        <para>inter-node communication where client/server components are
+        deployed in different processes on different CPUs</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>A consequence of this requirement is that currently, DSI supports
+    three transport protocols: TCP/IP, Unix domain sockets and QNX message
+    passing. An extension of using shared memory for inter-component
+    communication deployed in the same process is provided currently by the
+    internal HARMAN frameworks.</para>
+
+    <para>The following figure depicts three applications using DSI interfaces
+    that are communicating .<figure>
+        <title>Distributed communication using DSI interfaces</title>
+
+        <mediaobject>
+          <imageobject role="html">
+            <imagedata fileref="figures/Logical_View.svg" />
+          </imageobject>
+        </mediaobject>
+      </figure></para>
+  </section>
+
+  <section>
+     
+
+    <title>Service discovery</title>
+
+     
+
+    <para>Another important aspect when using DSI is the service discovery
+    mechanism provided by the Service Broker. DSI applications register the
+    implemented and required service interfaces with the Service Broker.
+    </para>
+
+     
+    The Service Broker has the role to provide:
+    <itemizedlist>
+      <listitem>
+        <para>a notification mechanism to inform applications about services
+        that sign-in and sign-out.</para>
+      </listitem>
+
+      <listitem>
+        <para>address information used by applications to establish
+        communication over the DSI IPC.</para>
+      </listitem>
+    </itemizedlist>
+
+     
+
+    <para>The Service Broker can be used in a distributed system and can scale
+    gracefully its infrastructure over many nodes. The naming service
+    organization structure is similar with the DNS (Domain Naming Service)
+    structure where each node in the network is serviced by a Service Broker and
+    the Service Brokers are organized in a tree structure. A slave Service
+    Broker will forward its unresolved requests and its information about local
+    existing services to its parent, its master Service Broker.</para>
+
+    The Service Broker is part of the DSI run-time environement and is available 
+    together with the DSI IPC package. The protocols used between DSI applications
+    and the Service Broker and between the Service Brokers are described separately. 
+
+    <para>The following figure depicts how the applications use the service
+    discovery infrastructure to establish a DSI communication.</para>
+
+     
+
+    <figure>
+      <title>DSI run-time environment</title>
+
+      <mediaobject>
+        <imageobject role="html">
+          <imagedata fileref="figures/DSI_Architecture_MultiNode.png"
+                     scalefit="1" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+     
+  </section>
+
+  <section>
+    <title>Performance and footprint</title>
+
+    <para>One important requirement when designing DSI was to have good
+    performance and small footprint. This is crucial for an automotive
+    application where critical requirements related to start-up time or fast
+    reaction times exist. Therefore, the DSI implementations are quite
+    lightweight in terms of memory footprint (e.g. ~250KB for QNX) and CPU time
+    (see <ulink
+    url="https://collab.genivi.org/wiki/download/attachments/3277638/IPC_Frameworks_Comparison_v2.xlsx">IPC
+    benchmark in GENIVI</ulink>).</para>
+  </section>
+</chapter>

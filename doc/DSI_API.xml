@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+  <title>DSI API</title>
+
+  <subtitle>Version 0.2</subtitle>
+
+  <bookinfo>
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" contentdepth="50mm"
+                   fileref="figures/DSILogo.svg" format="SVG" />
+      </imageobject>
+    </mediaobject>
+
+    <corpname>Harman/Becker Automotive Systems GmbH</corpname>
+
+    <address>Becker-Göring-Straße 16, 76307 Karlsbad, Germany</address>
+
+    <date>March 2012</date>
+
+    <authorgroup>
+      <author>
+        <firstname>Martin</firstname>
+
+        <surname>Häfner <ulink
+        url="mailto:Martin.Haefner@harman.com">Martin.Haefner@harman.com</ulink></surname>
+      </author>
+
+      <author>
+        <firstname>Florentin</firstname>
+
+        <surname>Picioroaga <ulink
+        url="mailto:Florentin.Picioroaga@harman.com">Florentin.Picioroaga@harman.com</ulink></surname>
+      </author>
+    </authorgroup>
+
+    <editor>
+      <firstname>Martin</firstname>
+
+      <surname>Häfner <ulink
+      url="mailto:Martin.Haefner@harman.com">Martin.Haefner@harman.com</ulink></surname>
+    </editor>
+
+    <pubdate>19.03.2012</pubdate>
+
+    <releaseinfo>Draft</releaseinfo>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>Harman International Industries, Inc.</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>This document is part of the DSI IPC open source software and is
+      licensed under Mozilla Public License v2.0.</para>
+    </legalnotice>
+
+    <revhistory>
+      <revision>
+        <revnumber>0.1</revnumber>
+
+        <date>February 14th, 2012</date>
+
+        <authorinitials>MHaefner</authorinitials>
+
+        <revdescription>
+          <para>Initial version</para>
+        </revdescription>
+      </revision>
+
+      <revision>
+        <revnumber>0.2</revnumber>
+
+        <date>March, 2012</date>
+
+        <authorinitials>FPicioroaga</authorinitials>
+
+        <revdescription>
+          <para>Arranging document format to conform with the other documents in
+          the DSI specification.</para>
+        </revdescription>
+      </revision>
+    </revhistory>
+  </bookinfo>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <para>DSI is an acronym for Distributed Service Interface, a message
+    oriented middleware designed for embedded systems in the automotive
+    industry. It consists of an interface resolution and lifecycle service
+    executable, the so-called servicebroker, a C++ base library providing
+    communcation primitives and base classes and a Java based DSI code
+    generator.</para>
+
+    <para>The DSI base library only depends on the standard C++ library. It is
+    intended to be compiled for a Linux-compliant hard- and software platform,
+    i.e. Linux ARM or x86 using the GNU C++ compiler collection with a version
+    greator or equal to 4.4. It makes use of classes from the current standard
+    extension TR1.</para>
+
+    <para>This document describes the basic steps necessary to set up DSI client
+    and server applications. The code generator generates C++ base classes for
+    both the client implementation (also known as proxy) and the server (the
+    stub) from a service interface description file
+    (<filename>.hbsi</filename>). The developer may then implement the request
+    and response handlers from these generated skeletons.</para>
+
+    <figure>
+      <title>Static and generated code</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata contentwidth="100mm" fileref="figures/code_composition.gif"
+                     scalefit="1" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+  </chapter>
+
+  <chapter>
+    <title>Build setup</title>
+
+    <para>The very first step to build a DSI application is to generate code
+    from an interface definition file using the code generator located in the
+    java archive<filename> dsi2gen.jar</filename> which is based on Java 5. The
+    code generator accepts an <code><filename>.hbsi</filename></code> input file
+    and generates C++ headers and source files for</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the interface definition itself including the definition of all
+        data types defined in the <filename>.hbsi</filename></para>
+      </listitem>
+
+      <listitem>
+        <para>client and server skeletons, also known as proxy and stub</para>
+      </listitem>
+
+      <listitem>
+        <para>streaming functions for user-defined data types</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The code generator has to be invoked according to:</para>
+
+    <programlisting>java -jar dsi2gen.jar &lt;hbsi-input-file&gt; &lt;output-directory&gt;</programlisting>
+
+    <para>The DSI library source code is currently build with <code>cmake</code>
+    using <code>GNU make</code> as backend. Therefore, the source package
+    contains a macro that can be invoked for generating an archive with the
+    above described code fragments from an interface definition file. The
+    <code>cmake</code> macro will be installed during the installation process
+    of the DSI source package - via <code>make install</code> - and will be
+    located in the directory
+    <filename>&lt;CMAKE_INSTALL_PREFIX&gt;/share/dsi</filename>, e.g.
+    <filename>/usr/local/share/dsi</filename> and can be referenced from
+    there.</para>
+
+    <para>As example, the following <filename>CMakelists.txt</filename> will
+    create a ping application linked against an
+    <filename>libPingPong.a</filename>.</para>
+
+    <programlisting>ADD_EXECUTABLE(ping ping.cpp)
+    TARGET_LINK_LIBRARIES(ping PingPong dsi_base dsi_common dsi_servicebroker rt pthread)
+
+    DSI2_GENERATE(PingPong.hbsi)</programlisting>
+
+    <para>The makefile snippit also shows which libraries have to be linked for
+    a complete DSI application, no matter if client or server:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold"><code>dsi_base</code></emphasis>
+        implementing the DSI-specific base classes</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold"><code>dsi_common</code></emphasis>
+        implementing generic utility classes not provided by the standard
+        library</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold"><code>dsi_servicebroker</code></emphasis>
+        implementing the communication interface to the servicebroker</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold"><code>rt</code></emphasis> standard library
+        for Linux realtime extensions</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold"><code>pthread</code></emphasis> standard
+        library for enabling Linux threading support</para>
+      </listitem>
+    </itemizedlist>
+  </chapter>
+
+  <chapter>
+    <title>Compile time</title>
+
+    <section>
+      <title>DSI Proxy</title>
+
+      <para>The proxy is the client of the DSI service. The proxy is always
+      derived from the generated DSIProxy class (in our example this would be
+      <classname>CPingPongDSIProxy</classname>).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>For each request in the interface, the proxy has a
+          <methodname>requestABC(...)</methodname> method. ABC is the name of
+          the method.</para>
+        </listitem>
+
+        <listitem>
+          <para>For each response that might return from the server, the proxy
+          has a <methodname>responseABC(...)</methodname> method the proxy can
+          overwrite.</para>
+        </listitem>
+
+        <listitem>
+          <para>For each attribute in the service, the proxy has a
+          <methodname>notifyOnABC()</methodname> which sets a
+          notification.</para>
+        </listitem>
+
+        <listitem>
+          <para>For each attribute in the service, the proxy has an
+          <methodname>onABCUpdate(...)</methodname> method that is called when
+          the attribute changed its value.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The proxy does not have to implement all the response methods. It
+      can implement that one it is interested in. Here an example that shows how
+      to implement a proxy:</para>
+
+      <programlisting>
+#include "dsi/CCommEngine.hpp"
+#include "CPingPongDSIProxy.hpp"
+
+class CPing : public CPingPongDSIProxy
+{
+   public:
+   CPing() 
+   : CPingPongDSIProxy("pong")
+   {
+      // NOOP
+   }
+
+   void componentConnected()
+   {
+      // the service has connected
+      requestPing(L"Hallo Welt");
+   }
+
+   void componentDisconnected()
+   {
+      // the service has disconnected
+   }
+
+   void responsePong(const std::wstring&amp;amp; message)
+   {
+      notifyOnStringAttribute(); // set a notification on StringAttribute
+   }
+
+   void onStringAttributeUpdate(const std::wstring&amp;amp; StringAttribute, DSI::DataStateType)
+   {
+      // the attribute StringAttribute has an initial or new value
+      assert( StringAttribute == "Hello World!" );
+   }
+};
+
+
+int main()
+{
+   DSI::CCommEngine engine;
+
+   CPing proxy;
+   engine.add(proxy);
+
+   return engine.run();
+}</programlisting>
+    </section>
+
+    <section>
+      <title>DSI Stub</title>
+
+      <para>The DSI stub is the implementation of the service, in other words
+      the server implementation. The stub is always derived from the generated
+      DSIStub class (in our example this would be
+      <classname>CPingPongDSIStub</classname>). All request methods in the stub
+      are pure virtual. So the derived class must implement them.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>For each request in the interface, the stub has a pure virtual
+          method named <methodname>requestABC(...)</methodname>. ABC is the name
+          of the request.</para>
+        </listitem>
+
+        <listitem>
+          <para>For each response in the interface, the stub has a method called
+          <methodname>responseABC(...)</methodname>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting>
+#include "dsi/CCommEngine.hpp"
+#include "CPingPongDSIStub.hpp"
+
+
+class CPong : public CPingPongDSIStub
+{
+   public:
+   CPong() 
+   : CPingPongDSIStub( "pong" )
+   {
+      setStringAttribute("Hello World!");
+   }
+
+   void requestPing(const std::wstring&amp;amp; message)
+   {
+      responsePong(message);
+   }
+};
+
+
+int main()
+{
+   DSI::CCommEngine engine;
+
+   CPong stub;
+   engine.add(stub);
+
+   return engine.run();
+}
+
+      </programlisting>
+
+      <para>As stated above, the communication engine implements a multiplexing
+      algorithm to serve multiple proxies and/or stubs at one time. Therefore,
+      proxy or stub implementations have to keep the communication engine
+      reactive which means that blocking requests should be avoided within this
+      thread context and should be handled by other threads.</para>
+    </section>
+
+    <section>
+      <title>Communication Engine</title>
+
+      <para>DSI proxies and stubs communicate through the underlying transport
+      with each other, typically local or TCP/IP sockets. The communication
+      engine will act as a muliplexer for incoming requests or responses and
+      also helps duplexing the DSI packages via socket reuse for resource
+      efficiency reasons. Therefore, clients and servers always belong to a
+      communication engine where they have to be registered on.</para>
+
+      <programlisting>
+int main()
+{
+   DSI::CCommEngine engine; 
+
+   // add the proxy to the engine
+   CPingPongDSIProxyImpl proxy("pong");   
+   engine.add(proxy);
+
+   // add the stub to the engine
+   CPingPongDSIStubImpl stub("pong");
+   engine.add(stub);
+
+   return engine.run();   // enter the event loop
+}
+</programlisting>
+
+      <para>In this example the <code>CCommEngine</code> object is being
+      created, and the proxy and stub are being added to it. In this case, both
+      the proxy and stub would run in the same application. You can add an
+      arbitrary amount of proxies and stubs to an engine. The engine
+      automatically enables TCP/IP transport if a TCP/IP enabled stub was
+      added.</para>
+
+      <para><code>engine.run()</code> runs the main event loop. This call will
+      first return if <code>stop()</code> is called on the engine from any
+      callback handler or any other thread.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Runtime</title>
+
+    <section>
+      <title>DSI protocol tracing</title>
+
+      <para>The DSI library supports the registration of a callback hook in
+      order to allow the tracing of all outgoing and incoming DSI requests. A
+      trace handler has to implement the C++ interface <code>IChannel</code>
+      which resides in the namespace <code>DSI::Trace</code>. The interface must
+      provide the following callback functions:</para>
+
+      <programlisting>
+/**
+* Open an output stream for the given interface.
+*
+* @return -1 if opening a stream for the handle does not work or any positive integer
+*         in case of success.
+*/
+virtual int open(const SFNDInterfaceDescription&amp;amp; iface, Direction dir, uint32_t updateId = DSI::INVALID_ID) = 0;
+
+/**
+* Close the outputstream as described by @c handle.
+*/
+virtual void close(int handle) = 0;
+
+/**
+* @return true if input streaming is enabled for the correspondant 
+*         interface and direction for which the handle was opened, else false.
+*/
+virtual bool isActive(int handle) = 0;
+
+/**
+* @return true if payload streaming is enabled for the correspondant 
+*         interface, else false.
+*/
+virtual bool isPayloadEnabled(int handle) = 0;
+
+/**
+* Write a complete DSI frame. The @c info pointer may be null in case
+* of non-data (dis-/connect request) or further-data requests (in case of large DSI requests).
+*/
+virtual void write(int handle, const DSI::MessageHeader* hdr, 
+const DSI::EventInfo* info, const void* payload, size_t len) = 0;      
+
+</programlisting>
+
+      <para>A simple console based trace handler implements the tracing
+      interface by writing all DSI requests and responses received or sent via
+      the transport layer to <code>stdout</code>. The tracing subsystem has to
+      be initialized by registration of a trace handler instance, as done in the
+      following example:</para>
+
+      <programlisting>
+#include "dsi/CStdoutTracer.hpp"
+
+int main()
+{
+   DSI::Trace::CStdoutTracer tracer;
+   DSI::Trace::init(tracer);
+
+   DSI::CCommEngine engine;
+   ...
+}
+</programlisting>
+
+      <para>This will e.g. for the delivered pong application generate a console
+      output in the following form:</para>
+
+      <programlisting>mhaefner@ubuntu:/export/dsi/build/debug/examples/pingpong$ ./pong
+
+      ==&gt; DSI v4.0 ConnectRequest
+      serverId     : 500016.1000
+      clientId     : 100013.1000
+      interface    : ping.PingPong:0.2
+
+      ==&gt; DSI v4.0 DataRequest
+      serverId     : 500016.1000
+      clientId     : 100013.1000
+      interface    : ping.PingPong:0.2
+      requestType  : REQUEST
+      requestId    : 0
+      sequenceNr   : 2
+
+      &lt;== DSI v4.0 DataResponse
+      serverId     : 500016.1000
+      clientId     : 100013.1000
+      interface    : ping.PingPong:0.2
+      responseType : RESULT_OK
+      requestId    : 2147483648
+      sequenceNr   : 2
+
+      ==&gt; DSI v4.0 DisconnectRequest
+      serverId     : 500016.1000
+      clientId     : 100013.1000
+      interface    : ping.PingPong:0.2
+
+      mhaefner@ubuntu:/export/dsi/build/debug/examples/pingpong$</programlisting>
+
+      <para><code>==&gt;</code> shows incoming requests or responses while
+      <code>&lt;==</code> shows the outgoing equivalents. The current
+      implementation of the <code>CStdoutTracer</code> does not support payload
+      deserialization though payload data in general may be transferred and
+      displayed as well.</para>
+    </section>
+
+    <section>
+      <title>Logging subsystem</title>
+
+      <para>In embedded environments it is sometimes not possible to use a
+      general purpose debugger like gdb for application debugging on the target.
+      In these cases, the standard mechanism to log the application flow is by
+      adding debugging statements, e.g. printf, to the code. DSI supports a set
+      of macros that is used within the library code. These macros can be
+      redefined by the end-user compiling the base library to fit his logging
+      architecture. The default implementation supports logging to stdout/stderr
+      or to the syslog facility.</para>
+
+      <para>The logging subsystem within an DSI application context can be
+      adjusted with the two functions <code>Log::setLevel(int)</code> and
+      <code>Log::setDevice(int)</code> where valid values for level are in the
+      range 0 (critical errors) to 4 (debugging information). The default level
+      is <code>Critical</code> and the default device is set to
+      <code>SystemLog</code>, that means only severe errors are logged into the
+      syslog be default. See <filename>include/Log.hpp</filename> for distinct
+      information.</para>
+
+      <para>The following macros are available and though could be
+      redefined:</para>
+
+      <table>
+        <title>Logging macros</title>
+
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Macro name</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>TRC_SCOPE_DEF(a,b,c)</entry>
+
+              <entry>Definition of a global trace scope by a 3-tuple of C++
+              identifiers. Typically the 3-tuple refers to the current context,
+              e.g. TRC_SCOPE_DEF(dsi, CCommEngine, run).</entry>
+            </row>
+
+            <row>
+              <entry>TRC_SCOPE(a,b,c)</entry>
+
+              <entry>RAII object that traces the lifetime of the current trace
+              context via entry and exit messages. It may refer to a previously
+              defined scope definition.</entry>
+            </row>
+
+            <row>
+              <entry>DBG_MSG((msg))</entry>
+
+              <entry>This macro checks for the appropriate logging level and
+              typically prints informational messages.</entry>
+            </row>
+
+            <row>
+              <entry>DBG_WARNING((msg))</entry>
+
+              <entry>This macro checks for the appropriate logging level and
+              typically prints warning messages.</entry>
+            </row>
+
+            <row>
+              <entry>DBG_ERROR((msg))</entry>
+
+              <entry>This macro checks for the appropriate logging level and
+              typically prints error messages.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>Threading</title>
+
+      <para>DSI proxies and stubs cannot be considered to be reentrant.
+      Therefore, it is not safe to call any methods on stubs or proxies from
+      within other threads the communication engine is not running in since
+      proxies and stubs always belong to a certain communication engine.
+      Crossing thread boundaries can only be done by using some kind of
+      event-queueing mechanism, e.g. a message queue, socket or pipe or any
+      other pollable device. You may add a pollable device to the communcation
+      engine by calling <code>addGenericDevice(...)</code> with the file
+      descriptor to poll on, an appropriate event handler functor and the
+      expected data flow direction, i.e. the poll flag to be set for the file
+      descriptor. By doing so, the event data may be transferred into the
+      communication engine's thread context and be processed synchronously
+      within the given event handler functor called from the communcation engine
+      when appropriate data arrives.</para>
+    </section>
+
+    <section>
+      <title>Environment variables</title>
+
+      <para>The behaviour of DSI applications built using the DSI base classes
+      can be controlled via multiple environment variables.</para>
+
+      <table>
+        <title>DSI related environment variables</title>
+
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Variable name</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>DSI_SERVICEBROKER</entry>
+
+              <entry>The server socket path of the servicebroker relative to the
+              root mountpoint
+              <filename>/var/run/servicebroker</filename>.</entry>
+            </row>
+
+            <row>
+              <entry>DSI_COMMENGINE_PORT</entry>
+
+              <entry>The IP port the communication engine should bind to in case
+              of services requiring IPv4 transport. If this environment variable
+              is not set, the port will be assigned by the OS kernel.</entry>
+            </row>
+
+            <row>
+              <entry>DSI_IP_ADDRESS</entry>
+
+              <entry>The IPv4 address in dotted quad notation that will be used
+              when registerign services at the servicebroker. If not given, the
+              servicebroker is able to dynamically resolve the correct IPv4
+              address in multi-node environments. Not setting this variable is
+              typically the right choice. Note, that setting this variable does
+              not affect the binding of server sockets to network interfaces,
+              i.e. sockets are currently always bound to
+              <const>INADDR_ANY</const>.</entry>
+            </row>
+
+            <row>
+              <entry>DSI_FORCE_TCP</entry>
+
+              <entry>Forces all services to be registered as TCP/IP services in
+              addition to the registration for local transport. Moreover,
+              services are connected via TCP/IP sockets even from local clients
+              which could easily use local transport.</entry>
+            </row>
+
+            <row>
+              <entry>DSI_RECV_TIMEOUT</entry>
+
+              <entry>Timeout to be set on DSI transport sockets for receiving
+              data.</entry>
+            </row>
+
+            <row>
+              <entry>DSI_SEND_TIMEOUT</entry>
+
+              <entry>Timeout to be set on DSI transport sockets for sending
+              data.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <?dbfo-need ht="220mm" ?>
+  </chapter>
+</book>

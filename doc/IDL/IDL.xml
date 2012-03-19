@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="DSI_IDL_Specification">
+  <title>Interface Description Language (IDL)</title>
+
+  <section>
+     
+
+    <title>Overview</title>
+
+     This chapter describes the DSI IDL covering: 
+
+    <itemizedlist>
+      <listitem>
+        <para>the IDL specification</para>
+      </listitem>
+
+      <listitem>
+        <para>an overview of the DSI IDL editor</para>
+      </listitem>
+
+      <listitem>
+        <para>an overview of the code generation</para>
+      </listitem>
+    </itemizedlist>
+
+     
+  </section>
+
+  <section>
+    <title>Formal interfaces</title>
+
+    <para>One of the more powerful modern programming patterns that has arisen
+    in the last years is the concept of formalized interfaces. These formalized
+    interfaces have two essential properties:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>They support transparent communication across thread and process
+        boundaries – in some cases even across hardware boundaries.</para>
+      </listitem>
+
+      <listitem>
+        <para>They provide a formal separation of interface and implementation.
+        In an application a formally defined interface may exist more than once
+        and each instance could be an encapsulation of a different
+        implementation.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The applications based on DSI use formal interfaces described in an
+    XML based language.</para>
+
+    <section>
+      <title>Service interface inspired by the <acronym>CORBA</acronym>
+      model</title>
+
+      <para>The service interface is an implementation of a very small
+      <glossterm>CORBA</glossterm> subset, suitable for use in resource-poor
+      embedded systems - a sort of "poor man's <acronym>CORBA</acronym>".
+      Specifically, it provides the ability to define a formal definition for a
+      programming interface. This characterization is valuable because it
+      provides an immediate feel for the role that the service interface
+      plays.</para>
+
+      <para>A dedicated code generator is used within the build process to
+      create proxy and stub objects for all defined service interfaces.</para>
+
+      <para>A client that wishes to make use of a service interface may create a
+      proxy object. A server that provides an implementation of a service
+      interface must inherit from the stub class in an OO programming language
+      (e.g. C++) or register callbacks to the stub in a procedural programming
+      language, in C.</para>
+
+      <para>For further details regarding code generation please see the
+      appropriate chapter.</para>
+    </section>
+
+    <section>
+      <title>The DSI IDL concepts</title>
+
+      <para>Before going to describe the XML syntax of the DSI IDL in detail the
+      main concepts will be presented: data types, methods to exchange data
+      types and error handling.</para>
+
+      <section>
+        <title>Data types</title>
+
+        <para>An <glossterm>API</glossterm> will need the possibility to
+        describe information to be transferred between applications. The DSI IDL
+        is similar with other static languages where the structure of the
+        information is known at compile time and provides a set of primitive
+        data types and the possibility to aggregate the primitive data types in
+        more complex structures.</para>
+
+        <para>Because out of the interface IDL definition code in a standard
+        programming language will be generated the data types are strongly
+        oriented at the C++ programming language way of handling data
+        types.</para>
+
+        <section>
+          <title>Primitive data types</title>
+
+          <para>For an IPC mechanism it is important to define the byte order or
+          the alignment. However, on the logical level, in the IDL these facts
+          are not important but only the size of the data type is important
+          because it defines how much information can be transmitted. The byte
+          order and alignment can be freely chosen by the IPC transporting the
+          data.</para>
+
+          <section>
+            <title>Integer Data Types</title>
+
+            <para>The integer types literals can be used as in C++ accepting the
+            same syntax, e.g. using the decimal, octal, hexadecimal base
+            notation.</para>
+
+            <table>
+              <title>Size for integer data types</title>
+
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry><emphasis role="bold">Type</emphasis></entry>
+
+                    <entry><emphasis role="bold">Size [bytes]</emphasis></entry>
+                  </row>
+
+                  <row>
+                    <entry>byte/char</entry>
+
+                    <entry>1</entry>
+                  </row>
+
+                  <row>
+                    <entry>signed/unsigned short</entry>
+
+                    <entry>2</entry>
+                  </row>
+
+                  <row>
+                    <entry>signed/unsigned int</entry>
+
+                    <entry>4</entry>
+                  </row>
+
+                  <row>
+                    <entry>signed/unsigned long long</entry>
+
+                    <entry>8</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </section>
+
+          <section>
+            <title>Floating Point Types</title>
+
+            <para>As for the integral types, the floating types literals use the
+            C++ syntax, e.g. <literal>1.23</literal>, <literal>.23</literal>,
+            <literal>1.</literal> , <literal>1.2e10</literal>,
+            <literal>2.0f</literal>, etc.</para>
+
+            <table>
+              <title>Size for floating point data types</title>
+
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry><emphasis role="bold">Type</emphasis></entry>
+
+                    <entry><emphasis role="bold">Size [bytes]</emphasis></entry>
+                  </row>
+
+                  <row>
+                    <entry>Float</entry>
+
+                    <entry>4</entry>
+                  </row>
+
+                  <row>
+                    <entry>Double</entry>
+
+                    <entry>8</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+          </section>
+
+          <section>
+            <title>Boolean Type</title>
+
+            <para>A boolean data type is available and can have as values:
+            <literal>true </literal>and <literal>false</literal>.</para>
+          </section>
+
+          <section>
+            <title>Enumeration Type</title>
+
+            <para>An enumeration is a data type that can hold a set of values
+            specified by the user. Once defined, an enumeration is used very
+            much like an integer type.</para>
+          </section>
+
+          <section>
+            <title>String Type</title>
+
+            <para>A string type with dynamic size is available where the content
+            is encoded in UTF-8.</para>
+          </section>
+
+          <section>
+            <title>Buffer Type</title>
+
+            <para>A contiguos region of physical memory storage. A Buffer
+            implementation can be different than a Vector of bytes
+            implementation, the contiguity is not guranteed for the later
+            case.</para>
+          </section>
+        </section>
+
+        <section>
+           
+
+          <title>Compound types</title>
+
+           The compound types can be seen as containers of primitive data types. 
+
+          <section>
+            <title>Structure type</title>
+
+            <para>An aggregate of elements of arbitrary types can be used with
+            the <literal>Structure</literal> data type. Using this data type
+            more complex data types can be built on base of the primitive
+            types.</para>
+          </section>
+
+           
+
+          <section>
+            <title>Vector Type</title>
+
+            <para>An aggregate of elements having the same data type with a
+            dynamic size can be used in DSI IDL.</para>
+          </section>
+
+           
+
+          <section>
+            <title>Variant</title>
+
+            <para>A variant is similar with the <literal>union</literal> data
+            type in C++. It is a placeholder to contain just one element from a
+            defined set of different data types.</para>
+          </section>
+
+           
+
+          <section>
+            <title>Map</title>
+
+            <para>A map is a collection of (key,value) pairs where a key appears
+            only once in the collection.</para>
+          </section>
+
+           
+        </section>
+      </section>
+
+      <section>
+        <title>Exchanging data</title>
+
+        <para>Having possibility to encode information in the available data
+        types, the IDL provides also mechanisms to exchange this
+        information.</para>
+
+        <section>
+          <title>Attributes - interface state information</title>
+
+          <para>Attributes can be used to store state information and are
+          different to events or signals which encode stateless information that
+          is lost as soon as the signal is emitted. The publish/subscribe
+          messaging pattern is provided to the client to retrieve the state
+          information. A client will register to the server to be notified on
+          changes in the values of the data attributes. When the data changes on
+          the server side the client will get the new value of the
+          attribute.</para>
+
+          <para>Data attributes and the parameters of request and response
+          methods may have any desired type. Both built-in and user-defined
+          types may be used but several restrictions apply. One restriction is
+          that pointers or references are not supported. If a pointer or
+          reference must be transported, it is the responsibility of the
+          developer to package it as a data element within some class. He then
+          also carries the burden of deciding how this data element can be
+          meaningfully transported across an address space boundary.</para>
+        </section>
+
+        <section>
+          <title>Informations or events - interface stateless
+          information</title>
+
+          <para>Informations in DSI IDL can be used by the server implementing
+          an interface to send stateless information or events. The clients can
+          notify on available informations to get these events.</para>
+
+          <para>An information can have any number of parameters and also can be
+          overloaded, the same information can exist with different signatures
+          i.e. accepting different kind of parameters .</para>
+        </section>
+
+        <section>
+          <title>Request methods</title>
+
+          <para>The request methods allow a client to trigger actions on the
+          server side. Depending on the underlying IPC mechanism the request
+          method can be synchronous (blocking) or asynchronous (non-blocking).
+          The DSI IPC protocol provides asynchronous calls.</para>
+
+          <para>A request method can accept any number of parameters. The server
+          will process the request and can send back an answer in form of a
+          response method.</para>
+
+          <para>Request methods can be overloaded, the same request can exist
+          with different signatures i.e. accepting different kind of parameters.
+          The designer of the interface can define for the request parameters
+          default values which are optional to be provided by the client.</para>
+
+          <para>A request can be coupled to a response or can be of kind "fire
+          and forget" with no response. When a request is coupled to a response
+          the server must send back the coupled response method.</para>
+        </section>
+
+        <section>
+          <title>Response methods</title>
+
+          <para>The response methods can be used by the server as reply to a
+          request method.</para>
+
+          <para>A difference to other IDLs is that in DSI other clients than the
+          one that has triggered an action on the server over a request can
+          notify on all the response methods and can get themselves these
+          response. So the other clients can hear all the output traffic a
+          server it does.</para>
+
+          <para>Another difference is that a server may send several responses
+          as result of a client's request or may send the same response method
+          to different request methods.</para>
+
+          <para>A response method, like a request method, can have any number of
+          parameters and also can be overloaded.</para>
+        </section>
+
+        <section>
+          <title>Register methods - server side filters</title>
+
+          <para>Register methods can be seen as a mechanism to apply server side
+          filters on the data the server sends to its clients over the
+          information methods.</para>
+
+          <para>The server provides parametrized filters and the clients can
+          customize these filters. When changes are sent by the server, the
+          server will first filter the data and then send it only to the clients
+          for which the filter applies. The clients can dynamically
+          register/unregister to the server to make use of server
+          filters.</para>
+
+          <para>This mechanism was introduced in order to improve performance in
+          the system and avoid large traffic of data that will not be used on
+          the client side.</para>
+
+          <para>Example:</para>
+
+          <para>Preconditions:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>the server can have for the power voltage of the system an
+              attribute <varname>voltage</varname> but also an information
+              <function>informationVoltage(<parameter>int
+              voltage</parameter>)</function></para>
+            </listitem>
+
+            <listitem>
+              <para>the server provides for the power voltage information a
+              register method, a filter with customizable parameters for the
+              voltage conditions: <function>registerVoltageFilter(<parameter>int
+              underVoltage</parameter>, <parameter>int
+              overVoltage</parameter>)</function></para>
+            </listitem>
+
+            <listitem>
+              <para>a client monitoring critical voltage conditions is
+              interested for under-voltage and over-voltage conditions.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Solutions:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>the client can notify to get permanent updates of the power
+              voltage attribute. In this case will get all updates including the
+              normal range</para>
+            </listitem>
+
+            <listitem>
+              <para>the client can use the
+              <function>registerVoltageFilter</function> with its values and
+              will get from the server the
+              <function>informationVoltage</function> with the current voltage
+              only when the <varname>voltage</varname> is less than
+              <parameter>underVotage</parameter> or greater than
+              <parameter>overVoltage</parameter> specified values.</para>
+            </listitem>
+          </orderedlist>
+        </section>
+      </section>
+
+      <section>
+        <title>Error handling</title>
+
+        <para>Error handling does not have a dedicated support in the DSI IDL.
+        Currently it is up to the interface designer to provide responses with
+        error codes as parameters indicating if the request was processed
+        successfully or not.</para>
+
+        <para>However, the DSI IPC implementation has a dedicated error
+        handling.</para>
+
+        <para>For example the attributes can be invalidated from the server
+        side, that means the clients will receive special events indicating that
+        the attribute value can not be computed currently by the server.</para>
+
+        <para>Other example will be that a server can not process a request as
+        it is busy processing the same request from other client. In this case
+        the client will get a notification signalling the busy state of the
+        server.</para>
+
+        <para>If the interface designer is defining an enumeration with the name
+        <function>Error</function> then the code generator will generate an
+        additional error handling that can be used on the server side to signal
+        a predefined error code and on the client side to get it.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>The IDL language</title>
+
+      <para>The DSI IDL is based on XML. Every interface is described in its own
+      file and an XML schema is provided to check the validity of the file. The
+      XML schema and an Ecore model are provided along with the IDL
+      documentation package.</para>
+
+      <para>An example of a DSI IDL interface that covers the main concepts is
+      provided too.</para>
+
+      <note>
+        <para>It is important to know that the DSI IDL is a subset of another
+        IDL used internally by Harman the HBSI (Harman Becker Service
+        Interface). The DSI IDL does not use all the features of the HBSI but
+        for completion the elements of the HBSI will be mentioned here,
+        too.</para>
+      </note>
+
+      <para>A common information available for many XML nodes and described only
+      for the DSI node is composed from: <literal>Name</literal>,
+      <literal>Description</literal>, <literal>Deprecation</literal>,
+      <literal>Hint</literal> and <literal>ID</literal>. The
+      <literal>ID</literal> is used just to have a faster code generator.</para>
+
+      <section>
+        <title>The <literal>DSI</literal> service interface</title>
+
+        <para>The XML node <literal>DSI</literal> contains information regarding
+        the service interface like name, version, etc. and containers with
+        additional elements available in the interface like data types, methods,
+        attributes, etc. The interface information is described below the
+        containers are described in the following sections.</para>
+
+        <section>
+          <title><literal>Name</literal></title>
+
+          <para>The name of the interface defined in the IDL file. The name will
+          identify all implementations of the interface in the service discovery
+          directory. Additionally the implementations will set an instance name,
+          aka role name, to distinguish from other implementations of the same
+          interface.</para>
+        </section>
+
+        <section>
+          <title><literal>Description</literal></title>
+
+          <para>Documentation of the interface. This can be used by the
+          generator to produce Doxygen documentation directly in the generated
+          source code.</para>
+        </section>
+
+        <section>
+          <title><literal>Deprecated</literal></title>
+
+          <para>Flag used to inform the interface clients that the interface is
+          in a deprecation phase. The interface should not be used
+          anymore.</para>
+        </section>
+
+        <section>
+          <title><literal>Hint</literal></title>
+
+          <para>In case the interface is marked as deprecated this field can be
+          used to provide additional information about the deprecation reason or
+          hints about other interface to be used in order to get the same
+          functionality.</para>
+        </section>
+
+        <section>
+          <title><literal>Extern</literal></title>
+
+          <para>Flag indicating if the data type definitions are all DSI capable
+          and can be therefore sent across platforms.</para>
+
+          <para>An application has the possibility to define its own data types
+          in non DSI IDL files e.g. in C++ header files, or to use directly the
+          <acronym>API</acronym> of a 3rd party software defined in these
+          programming language specific files. These data types can be used only
+          internally in the application, between different components deployed
+          in the application.</para>
+        </section>
+
+        <section>
+          <title><literal>Abstract</literal></title>
+
+          <para>Flag to mark if the interface can be used directly or it has to
+          be used over a specialization. The concept is similar with abstract
+          classes in OO languages.</para>
+        </section>
+
+        <section>
+          <title><literal>Version</literal></title>
+
+          <para>The service interfaces have all version numbers in a form
+          &lt;major&gt;.&lt;minor&gt;.</para>
+
+          <para>The general rules when defining the version number are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>A change in the major version number (in the first position)
+              signifies a change that will break compatibility. This means that
+              a method or attribute has been deleted or that the signature of a
+              method or attribute has been changed.</para>
+            </listitem>
+
+            <listitem>
+              <para>A change in the minor version number (in the second
+              position) signifies a change that doesn't break compatibility. An
+              example would be when a method or attribute is added.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Given these rules, deciding if a client of one interface version
+          can communicate with the server implementing another version, two
+          conditions have to be satisfied:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>The major versions must be identical: MajorVersion(client)
+              == MajorVersion(server)</para>
+            </listitem>
+
+            <listitem>
+              <para>The minor version of the server must be greater than or
+              equal to the minor version of the client: MinorVersion(server)
+              &gt;= MinorVersion(client)</para>
+            </listitem>
+          </itemizedlist>
+        </section>
+
+        <section>
+          <title><literal>BaseInterface</literal></title>
+
+          <para>An interface can inherit from other interface - the base
+          interface. The current DSI IPC implementation allows only extending of
+          enumerations with new ids. No polymorphism is supported for the
+          moment.</para>
+        </section>
+
+        <section>
+          <title><literal>Includes</literal></title>
+
+          <para>Additional IDL files can be included in the interface. These can
+          contain data type definitions.</para>
+        </section>
+      </section>
+
+      <section>
+        <title><literal>DataTypes</literal></title>
+
+        <para>Container with data types defined or included from external files
+        in the interface. The container is a sequence of
+        <literal>DataType</literal> entries.</para>
+
+        <section>
+          <title><literal>DataType</literal></title>
+
+          <para>The primitive and compund data types supported in DSI IDL are:
+          <literal>Boolean</literal>, <literal>Int8</literal>,
+          <literal>UInt8</literal>, <literal>Int16</literal>,
+          <literal>UInt16</literal>, <literal>Int32</literal>,
+          <literal>UInt32</literal>, <literal>Int64</literal>,
+          <literal>UInt64</literal>, <literal>Float</literal>,
+          <literal>Double</literal>, <literal>String</literal>,
+          <literal>Buffer</literal>, <literal>Variant</literal>,
+          <literal>Vector</literal>, <literal>Map</literal>.</para>
+
+          <para>A user defined data type has a name and can have, as the
+          interface, information about: <literal>Description</literal>,
+          <literal>Deprecation</literal>, and <literal>Hint</literal>.</para>
+
+          <para>Additionally the following information can be also provided:
+          <literal>Kind</literal>, <literal>Namespace</literal>,
+          <literal>Include</literal>, <literal>Container</literal>,
+          <literal>Fields</literal> and <literal>BaseType</literal>.</para>
+        </section>
+
+        <section>
+          <title><literal>Kind</literal></title>
+
+          <para>The kind of a data type can be: <literal>Structure</literal>,
+          <literal>Streamable</literal>, <literal>Typedef</literal>.</para>
+
+          <para>A <literal>Structure</literal> data type can be used to define a
+          compound data type.</para>
+
+          <para>A <literal>Typedef</literal> data type is an alias for other
+          data type.</para>
+
+          <para>A <literal>Streamable</literal> data type is one imported from
+          an external non DSI IDL file which has already defined streaming
+          operators (not relevant for DSI IDL).</para>
+        </section>
+
+        <section>
+          <title><literal>Namespace</literal></title>
+
+          <para>A data type that is imported in the current interface can be
+          available under a <literal>Namespace</literal>.</para>
+        </section>
+
+        <section>
+          <title><literal>Include</literal></title>
+
+          <para>The data type is imported from an external file provided by this
+          filed.</para>
+        </section>
+
+        <section>
+          <title><literal>Container</literal></title>
+
+          <para>The DSI IDL provides some standard containers which are:
+          <literal>Vector</literal>, <literal>Variant</literal> and
+          <literal>Map</literal>. These were already described in a previous
+          section.</para>
+        </section>
+
+        <section>
+          <title><literal>Fields</literal></title>
+
+          <para>In case a data type is a compound type the elements of the
+          structure are included in a <literal>Fields</literal>
+          container.</para>
+
+          <para>Each <literal>Field</literal> XML node can provide information
+          about: <literal>Name</literal>, <literal>Description</literal>,
+          <literal>Deprecation</literal>, <literal>Hint</literal> and
+          <literal>Type</literal>. The type of the filed has to be defined in
+          the interface or imported from an external file.</para>
+
+          <para>Additionally, a field can have a default value defined over the
+          <literal>DefaultValue</literal> XML node.</para>
+        </section>
+
+        <section>
+          <title><literal>BaseType</literal></title>
+
+          <para>If the data type is of kind <literal>Typedef</literal>, an
+          alias, then the <literal>BaseType</literal> represents the original
+          data type name.</para>
+        </section>
+      </section>
+
+      <section>
+        <title><literal>Enums</literal></title>
+
+        <para>This is a container where all the enumerations used by the
+        interface are defined.</para>
+
+        <section>
+          <title><literal>Enum</literal></title>
+
+          <para>A enumeration has information such: <literal>Name,
+          Description</literal>, <literal>Deprecation</literal> and
+          <literal>Hint</literal>. The values for the enumeration can be defined
+          over the XML node <literal>EnumID</literal>.</para>
+
+          <para>The <literal>EnumID</literal> can also contain information
+          about: <literal>Name</literal>, <literal>Description</literal>,
+          <literal>Deprecation</literal> and <literal>Hint</literal>.
+          Additionally an integer value can be also specified for the
+          enumeration id.</para>
+        </section>
+      </section>
+
+      <section>
+        <title><literal>Methods</literal></title>
+
+        <para>The <literal>Methods</literal> container defines all available
+        methods of the interface.</para>
+
+        <section>
+          <title><literal>Method</literal></title>
+
+          <para>The <literal>Method</literal> XML node contains general
+          information about: <literal>Name, Description</literal>,
+          <literal>Deprecation</literal> and <literal>Hint</literal>.</para>
+
+          <para>A <literal>Method</literal> can be of type:
+          <literal>Request</literal>, <literal>Response</literal>,
+          <literal>Information</literal>, <literal>Register</literal> and
+          <literal>UnRegister</literal>. All these are explained in the DIS IDL
+          concepts section.</para>
+
+          <para>The <literal>Request</literal> methods can be coupled with a
+          <literal>Response</literal> method over the XML node
+          <literal>Response</literal>.</para>
+
+          <para>The parameters of the method are defined in the
+          <literal>Parameters</literal> container.</para>
+
+          <para>Every parameter provides information like: <literal>Name,
+          Description</literal>, <literal>Deprecation</literal> and
+          <literal>Hint</literal>. A method parameter can have also a default
+          value specified over the <literal>DefaultValue</literal> XML node.
+          Such a method parameter is optional to be provided by the clients of
+          the interface.</para>
+        </section>
+      </section>
+
+      <section>
+        <title><literal>Attributes</literal></title>
+
+        <para>The <literal>Attributes</literal> node is a container for all
+        state information provided by the interface.</para>
+
+        <section>
+          <title><literal>Attribute</literal></title>
+
+          <para>An attribute is defined by information like: <literal>Name,
+          Description</literal>, <literal>Deprecation</literal> and
+          <literal>Hint</literal>.</para>
+
+          <para>The <literal>Type</literal> of the attribute refers to a data
+          type available in the <literal>DataTypes</literal> container.</para>
+
+          <para>The <literal>Notify</literal> information can be:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><literal>Always</literal>: the clients will receive the
+              value of the attribute every time the server updates it</para>
+            </listitem>
+
+            <listitem>
+              <para><literal>OnChange</literal>: the clients will receive the
+              values of the attribute only when the server changes it with a new
+              value</para>
+            </listitem>
+
+            <listitem>
+              <para><literal>Partial</literal>: this applies only for the Vector
+              data type. In this case the server can update only a contiguous
+              part of the vector. This part can be replaced, deleted or new
+              elements added in the vector.</para>
+            </listitem>
+          </itemizedlist>
+        </section>
+      </section>
+
+      <section>
+        <title><literal>Constants</literal></title>
+
+        <para>The <literal>Constants</literal> node is a container for all kind
+        of constants defined in the interface.</para>
+
+        <section>
+          <title><literal>Constant</literal></title>
+
+          <para>A <literal>Constant</literal> node has among general information
+          like: <literal>Name, Description</literal>,
+          <literal>Deprecation</literal> and <literal>Hint</literal> also a
+          <literal>Type</literal> information and the constant stored in the
+          <literal>Value</literal> XML node.</para>
+        </section>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>The service interface editor</title>
+
+    <para>Modifying the XML based definition of a DSI interface is error-prone
+    when working directly with the XML content, therefore a dedicated editor is
+    used to assist the user in this task. The service interface editor is an
+    Eclipse plugin and at HARMAN is integrated together with other Eclipse
+    plugins in an IDE, the MoCCA IDE. The plugin assist the user not only on
+    modifying the service interface but also in doing additional validation
+    tasks, e.g. detecting changes that must be reflected in a service interface
+    version change.</para>
+
+    <para>The following figures show some snapshots when working with the
+    service interface editor.</para>
+
+    <figure>
+      <title>Service interface, overview.</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="figures/ServiceEditor_Overview.png" scalefit="1" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>Service interface, method editor.</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="figures/ServiceEditor_Methods.png" scalefit="1" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>Service interface, types editor.</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="figures/ServiceEditor_Types.png" scalefit="1" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+  </section>
+
+  <section>
+    <title xreflabel="CodeGeneration">Code generation</title>
+
+    <para>The DSI interfaces may be imported and freely used by client
+    applications. Support libraries and code generators are provided that allow
+    DSI service interfaces to be imported and exported from within:</para>
+
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>a Java run-time environment</para>
+      </listitem>
+
+      <listitem>
+        <para>a <glossterm>C++</glossterm> environment</para>
+      </listitem>
+
+      <listitem>
+        <para>a C environment</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The DSI IPC glue code that brings together the server/client software
+    is composed from two parts:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>a DSI library providing an implementation for the DSI IPC
+        concepts</para>
+      </listitem>
+
+      <listitem>
+        <para>a code generation part that generates out of the DSI IDL code that
+        uses the DSI library and provides abstract concepts, easy to be used by
+        the server/client software.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>In the following section there will be presented an overview about the
+    code generation part.</para>
+
+    <section>
+      <title>Service interface as a 'wrapper'</title>
+
+      <para>Every service interface that is defined can be viewed as a 'wrapper'
+      around an implementation. The interface provides the formal definition of
+      the mechanisms to be used when accessing the implementation. The interface
+      mechanism provides a 'stub' class that must be used as the base class from
+      which the implementation inherits. It also provides a 'proxy' class that
+      can be instantiated in any application. To use the 'wrapped'
+      implementation, a client must obtain a proxy. The client only sees the
+      proxy, which will in turn ensure that all requests are correctly forwarded
+      to the implementation.</para>
+
+      <para>This idea has several consequences. One is that the location of the
+      implementation is invisible to the client. The implementation can be in
+      the same address space with the client, in other process on the same
+      platform (operating system and CPU) or on completely other
+      platform.</para>
+
+      <para>In the same way, the service interface provides no information to
+      the implementation about the origin of a request (which client and/or how
+      many clients in total). Requests from a client are completely anonymous
+      from the point of view of the application software.<footnote>
+          <para>Of course the source of a request is known within the service
+          interface glue code. This is required so that the service interface
+          can send the response back to the originator of the request.</para>
+        </footnote></para>
+
+      <para>The following figure shows the interaction between the code
+      generated out of the DSI IDL service interface and the client/server
+      implementation.</para>
+
+      <figure>
+        <title>Code generation overview for DSI IDL</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figures/CORBA_Model.bmp" scalefit="1" />
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The code generation is currently based on the Eclipse JET solution
+      for Model-Driven Development (MDD). Further implementations might move to
+      the new Eclipse MDD solution Xpand / Xtext.</para>
+    </section>
+  </section>
+</chapter>

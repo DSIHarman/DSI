@@ -1,0 +1,20 @@
+<%@jet
+
+   class    = "DSI_Streaming_CPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+
+   OUTPUTFILE( "DSI" + si.getName() + "Stream.cpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+
+#include "DSI<%= si.getName() %>.hpp"
+
+
+

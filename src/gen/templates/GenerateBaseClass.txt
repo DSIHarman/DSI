@@ -1,0 +1,47 @@
+/*
+ * ------------------------------------------------------------------
+ * Project         Harman Car Multimedia System
+ * (c) copyright   2004
+ * Company         Harman/Becker Automotive Systems GmbH
+ *                 All rights reserved
+ * ------------------------------------------------------------------
+ * Content:          Generation skeleton for Cogito
+ * ------------------------------------------------------------------
+ */
+
+//-------------------------------------------------------------------
+// Package and imports can also be defined in the JET file
+// using
+// <%@ jet package="templates"
+//         imports="org.w3c.dom"
+//         class="DemoGeneration"
+//         skeleton="GenerateSkeleton.txt" %>
+//-------------------------------------------------------------------
+package templates ;
+
+//-------------------------------------------------------------------
+// Imports
+//-------------------------------------------------------------------
+import com.harmanbecker.generate.GenerateContext;
+import com.harmanbecker.generate.GenerateEmiterBase;
+import com.harmanbecker.generate.GenerateException;
+
+//-------------------------------------------------------------------
+//-------------------------------------------------------------------
+/**
+ * <p>
+ * Class to generate the source code. Derived from GenerateEmiterBase
+ * interface. The framework is programmed against the interface
+ * and has not to know about the classes defined here.
+ * </p>
+ */
+public class CLASS extends GenerateEmiterBase
+{
+   /**
+    * Generate the template using the subtree and the parameter list.
+    * @param context the generate context
+    */
+   protected String doGenerate( GenerateContext context ) throws Exception ;
+}
+//-------------------------------------------------------------------
+//-------------------------------------------------------------------

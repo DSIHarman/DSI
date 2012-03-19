@@ -1,0 +1,20 @@
+digraph dsi_message
+{ 
+   node [shape=record]; 
+   rankdir=LR;
+
+   message [label="<f0> IPC header|<f1> service interface header|<f2> service interface payload"];
+   ipc_header [label="<f0> magic|protoMajor|protoMinor|serverID|clientID|<f1> command|flags|packetLength|reserved"];
+   service_interface_header [label="interface major|interface minor|<f0> request/response type|request/response id|sequence number"];
+   service_interface_payload [label=" serialized user data"];
+
+   ipc_command [ style = "filled" penwidth = 1 fillcolor = "white" fontname = "Courier New" shape = "Mrecord" label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td align="left">DataRequest,</td></tr><tr><td align="left">DataResponse</td></tr></table>> ];
+   service_interface_type [ style = "filled" penwidth = 1 fillcolor = "white" fontname = "Courier New" shape = "Mrecord" label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td align="left">REQUEST,</td></tr><tr><td align="left">REQUEST_NOTIFY,</td></tr><tr><td align="left">REQUEST_STOP_NOTIFY,</td></tr><tr><td align="left">REQUEST_LOAD_COMPONENT,</td></tr><tr><td align="left">REQUEST_STOP_ALL_NOTIFY,</td></tr><tr><td align="left">REQUEST_REGISTER_NOTIFY,</td></tr><tr><td align="left">REQUEST_STOP_REGISTER_NOTIFY,</td></tr><tr><td align="left">REQUEST_STOP_ALL_REGISTER_NOTIFY</td></tr></table>> ];
+
+   message:f0 -> ipc_header:f1;
+   message:f1 -> service_interface_header;
+   message:f2 -> service_interface_payload;
+
+   ipc_header:f1 -> ipc_command;
+   service_interface_header:f0 -> service_interface_type;
+}

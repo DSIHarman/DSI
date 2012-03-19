@@ -1,0 +1,228 @@
+<%@jet
+
+   class    = "CDSIProxy_HPP"
+   skeleton = "GenerateBaseClass.txt"
+   imports  = "com.harmanbecker.dsigen.* java.util.*"
+
+%>
+<%
+   ServiceInterface si = (ServiceInterface) context.getObjectParameter("ServiceInterface");
+   Method[] requestMethods = si.getRequestMethods();
+   Method[] responseMethods = si.getResponseMethods();
+   Value[] attributes = si.getAttributes();
+   GenerateHelperDSI helper = new GenerateHelperDSI( si );
+   String classname = "C" + si.getName() + "DSIProxy" ;
+
+   String defineName = classname.toUpperCase() + "_HPP" ;
+
+   OUTPUTFILE( classname + ".hpp" );
+%>
+<%@ include file="DSIFileHeader.jetpart"%>
+#ifndef <%= defineName %>
+#define <%= defineName %>
+
+#include "DSI<%= si.getName() %>.hpp"
+#include "dsi/CClient.hpp"
+
+
+/**
+ * DSI Proxy: <%= si.getName() %>
+ *
+ * <%= si.getDescription( "\n * " ) %>
+ */
+class <%= classname %> : public DSI::CClient
+{
+   // moved to private area - not for external use, just for the generated code
+   using DSI::CClient::doComponentConnected;
+   using DSI::CClient::doComponentDisconnected;
+   
+   using DSI::CClient::processResponse;  
+   using DSI::CClient::handleDataResponse;
+   using DSI::CClient::handleConnectResponse;
+   
+   using DSI::CClient::sendDisconnectRequest;
+   using DSI::CClient::setServerAvailableNotification;
+   using DSI::CClient::removeNotification;
+   using DSI::CClient::attachInterface;
+   using DSI::CClient::detachInterface;
+   
+public:
+   /**
+    * Constructor.
+    */
+   <%= classname %>( const char* rolename );
+
+   /**
+    * Destructor.
+    */
+   virtual ~<%= classname %>();
+
+<% for( Value attribute : attributes ) { %>
+   /**
+    * Attribute: <%= attribute.getName() %>
+    *
+    * <%= attribute.getDescription( "\n    * " ) %>
+    */
+   bool is<%= attribute.getCapitalName() %>Valid( void ) const ;
+   <%= helper.getParameterType( attribute.getDataType(), true, false ) %> get<%= attribute.getCapitalName() %>() const;
+   void notifyOn<%= attribute.getCapitalName() %>( bool notify = true );
+   <% if(attribute.notifyPartial()) { %>
+   virtual void on<%= attribute.getCapitalName() %>Update( <%= helper.getParameterType( attribute.getDataType(), true, false ) %> <%= attribute.getName() %>, DSI::DataStateType <%= attribute.getName().equals("state") ? "_state" : "state" %>, DSI::UpdateType type, int16_t position, int16_t count ) ;
+   <% } else { %>
+   virtual void on<%= attribute.getCapitalName() %>Update( <%= helper.getParameterType( attribute.getDataType(), true, false ) %> <%= attribute.getName() %>, DSI::DataStateType <%= attribute.getName().equals("state") ? "_state" : "state" %> ) ;
+   <% } %>
+
+<% } %>
+
+<% for( Method method : requestMethods ) { %>
+   /**
+    * <%= method.getDescription( "\n    * " ) %>
+    */
+   <%= helper.createMethodDeclaration( method, null, null, true, "int" ) %> ;
+
+   /**
+    * Request failure indicator for request @c <%= method.getName() %>.
+    * The @c <%= si.getName()%>SendError function was called on the stub side within a response handler with
+    * a request id as argument.
+<% if (si.hasErrorEnum()) { %>
+    * You may have a look at the @c lastError member variable to get the reason for the error.
+<% } %>
+    *
+    * @param errType Can be either RESULT_REQUEST_ERROR or RESULT_REQUEST_BUSY.
+    */
+   virtual void <%= method.getMethodName() %>Failed( DSI::ResultType /*errType*/ ) { /* NOOP */ }
+
+<% } %>
+   /**
+    * The @c <%= si.getName()%>SendError function was called on the stub side within a response handler
+    * with a response id as argument.
+<% if (si.hasErrorEnum()) { %>
+    * You may have a look at the @c mLastError member variable to get the reason for the error.
+<% } %>
+     *
+	 * Callback that is called for Responses
+	 */
+   virtual void processResponse( DSI::Private::CDataResponseHandle &handle ) ;
+
+   /*
+    * @param id The element which caused the error.
+    */
+   virtual void responseInvalid( <%= si.getName()%>::UpdateIdEnum /*id*/ ) { /* NOOP */ }
+
+<% for( Method method : responseMethods ) { %>
+   /**
+    * <%= method.getDescription( "\n    * " ) %>
+    */
+   virtual <%= helper.createEmptyMethodDeclaration( method, null, null, false, null ) %> { /* NOOP */ } // empty implementation
+
+   void notifyOn<%= Util.doCapitalLetter(method.getMethodName()) %>( bool notify = true );
+
+<% } %>
+
+<% if (si.hasErrorEnum()) { %>
+   /**
+    * error indicator of last invalid operations returned from server. This may be an invalid
+    * attribute, a failed request or a failed response.
+    */
+   <%= si.getName() %>::Error getLastError() ;
+
+<% } %>
+
+protected:
+
+   /**
+    * Implement this function to notice whenever a server is available and the proxy
+    * is connected to it. Within this call you may attach to attributes or call an initial request.
+    */
+   virtual void componentConnected() = 0;
+   
+   /**
+    * Implement this function to get a notice that the server got disconnected from your proxy.
+    * After this hook has been called all attributes will become invalid (i.e. they reset their
+    * state to DATA_NOT_AVAILABLE). The attributes values will stick to the last value that has 
+    * been transferred from the server.
+    */
+   virtual void componentDisconnected() = 0;
+
+private:
+
+   /// Actually calls @c componentConnected(), nothing more.
+   void doComponentConnected();
+   
+   /**
+    * Actually calls @c componentDisconnected() and then resets the attributes 
+    * states to DATA_NOT_AVAILABLE.    
+    */
+   void doComponentDisconnected();
+
+<% if (si.hasErrorEnum()) { %>
+   /**
+    * error indicator of last invalid operations returned from server. This may be an invalid
+    * attribute, a failed request or a failed response.
+    */
+   <%= si.getName() %>::Error mLastError ;
+
+<% } %>
+   /**
+    * Private Attribute Data
+    */
+<% for( Value attribute : attributes ) { %>
+   DSI::Private::ClientAttribute<<%= attribute.getDataType().getDSIBindingName( true ) %>> <%= attribute.getDSIBindingName() %>;   
+<% } %>
+
+   const char* getUpdateIDString( uint32_t updateId ) const;
+};
+
+<% for( Value attribute : attributes ) { %>
+/* ********************************************************************** */
+
+inline
+bool <%= classname %>::is<%= attribute.getCapitalName() %>Valid( void ) const
+{
+   return <%= attribute.getDSIBindingName() %>.isValid();
+}
+
+inline
+<%= helper.getParameterType( attribute.getDataType(), true, false ) %> <%= classname %>::get<%= attribute.getCapitalName() %>() const
+{
+   return <%= attribute.getDSIBindingName() %>.mValue;
+}
+
+inline
+void <%= classname %>::notifyOn<%= attribute.getCapitalName() %>( bool notify )
+{   
+   if( notify )
+      setNotification((uint32_t)<%= attribute.getDSIUpdateIdName(true) %>);
+   else
+      clearNotification((uint32_t)<%= attribute.getDSIUpdateIdName(true) %>);
+}
+
+<% } %>
+<% for( Method method : responseMethods ) { %>
+/* ********************************************************************** */
+
+inline
+void <%= classname %>::notifyOn<%= Util.doCapitalLetter(method.getMethodName()) %>( bool notify )
+{
+   if( notify )
+      setNotification( (uint32_t) <%= method.getDSIUpdateIdName( true ) %> );
+   else
+      clearNotification( (uint32_t) <%= method.getDSIUpdateIdName( true ) %> );
+}
+
+<% } %>
+<% if (si.hasErrorEnum()) { %>
+/* ********************************************************************** */
+
+inline
+<%= si.getName() %>::Error <%= classname %>::getLastError()
+{
+   return mLastError ;
+}
+<% } %>
+/* ********************************************************************** */
+
+
+#endif // <%= defineName %>
+
+
