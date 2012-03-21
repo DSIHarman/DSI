@@ -8,6 +8,10 @@
 #ifndef DSI_DSI_HPP
 #define DSI_DSI_HPP
 
+/**
+ * @file DSI.hpp
+ */
+
 #include <stdint.h>
 
 #include "dsi/clientlib.h"
@@ -149,14 +153,17 @@ namespace DSI
    } ;
 
 
+   /**
+    * Update type for partial attribute updates. This feature is available only for vectors of data elements.
+    */
    enum UpdateType
    {
-      UPDATE_NONE = -1,
+      UPDATE_NONE = -1,       ///< Internal default.
 
-      UPDATE_COMPLETE = 0,
-      UPDATE_INSERT,
-      UPDATE_REPLACE,
-      UPDATE_DELETE
+      UPDATE_COMPLETE = 0,    ///< Complete attribute is transmitted to the client, the client implementation will replace the attribute.
+      UPDATE_INSERT,          ///< The transmitted elements are to be inserted into the attribute on client side. Positioning information is also transferred.
+      UPDATE_REPLACE,         ///< The transmitted elements replace elements of the attribute on client side. Positioning information is also transferred.
+      UPDATE_DELETE           ///< The update requests transfers positioning information to the client side in order to delete elements on the client attribute.
    } ;
 
 
@@ -191,6 +198,7 @@ namespace DSI
    };
 
 
+   /// @internal
    struct Size
    {
       inline
@@ -211,8 +219,9 @@ namespace DSI
       int32_t  padding;
    };
 
-   const char* toString( RequestType rtype );
-   const char* toString( ResultType rtype );
+
+   const char* toString(RequestType rtype);
+   const char* toString(ResultType rtype); 
 
 
    inline
@@ -227,6 +236,7 @@ namespace DSI
    {
       return (id >= RESPONSE_ID_FIRST && id <= RESPONSE_ID_LAST);
    }
+   /// @endinternal
 
 }   // namespace DSI
 

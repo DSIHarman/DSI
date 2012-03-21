@@ -1,6 +1,15 @@
 #ifndef DSI_VERSION_H
 #define DSI_VERSION_H
 
+/** 
+ * @file version.h 
+ * 
+ * This file contains protocol versioning information settings for the following protocols:
+ *
+ * @li inter-application DSI protocol
+ * @li application-servicebroker protocol
+ * @li inter-servicebroker protocol
+ */
 
 /** @brief The DSI major version number. */
 #define DSI_VERSION_MAJOR 4

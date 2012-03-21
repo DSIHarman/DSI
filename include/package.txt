@@ -1,0 +1,16 @@
+/**
+
+@mainpage DSI reference implementation
+
+This document describes the interface of the DSI reference implementation. The reference implementation is based on C++ STL so this is the only language binding currently available. 
+
+Since DSI is heavily based on model driven development and therefore code generation, the base library interface is fairly small and contains only a couple of classes and functions visible to the public. The main items are:
+
+   @li @link DSI::CCommEngine @c CCommEngine @endlink - the DSI communication engine containing the main event loop
+   @li @link DSI::CServer @c CServer @endlink - the base class used by the code generator for DSI servers (aka stubs)
+   @li @link DSI::CClient @c CClient @endlink - the base class for DSI clients (aka proxies)
+   @li The servicebroker @link clientlib.h interface functions @endlink
+
+The @c private/ subfolder contains code necessary for inline implementation purpose only and is not intended for public use. Therefore, it is not part of this documentation and interfaces may change without notice.
+
+*/

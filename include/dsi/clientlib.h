@@ -10,10 +10,16 @@ extern "C" {
 
 
 /**
- * Servicebroker Clientlib
+ * @file clientlib.h
+ *
+ * Servicebroker clientlib.
  *
  * The servicebroker clientlib provides a convenient interface to the
- * servicebroker service.
+ * servicebroker service. Normally, a DSI user does not have ot bother with these
+ * functions since they are all called from within the DSI library adequately.
+ * If you ever plan to talk to the servicebroker directly you are encouraged to call
+ * these functions in favour of implementing the socket protocol on your own since
+ * this function interface is ment to be portable.
  */
 
 
