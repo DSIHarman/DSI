@@ -21,6 +21,7 @@
 #endif
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 
 using namespace DSI;
