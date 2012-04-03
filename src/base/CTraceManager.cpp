@@ -127,19 +127,19 @@ DSI::CTraceSession::~CTraceSession()
 
 bool DSI::CTraceSession::isPayloadEnabled() const
 {
-   return mHandle && DSI::CTraceManager::d->mChannel->isPayloadEnabled(mHandle);   
+   return mHandle >= 0 && DSI::CTraceManager::d->mChannel->isPayloadEnabled(mHandle);   
 }
 
 
 bool DSI::CTraceSession::isActive() const
 {
-   return mHandle && DSI::CTraceManager::d->mChannel->isActive(mHandle);      
+   return mHandle >= 0 && DSI::CTraceManager::d->mChannel->isActive(mHandle);      
 }
 
 
 void DSI::CTraceSession::write(const DSI::MessageHeader* hdr, const DSI::EventInfo* info, const void* payload, size_t len)
 {
-   if (mHandle)
+   if (mHandle >= 0)
    {
       DSI::CTraceManager::d->mChannel->write(mHandle, hdr, info, payload, len);
    }
