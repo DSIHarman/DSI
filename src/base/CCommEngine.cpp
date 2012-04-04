@@ -684,7 +684,7 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
             break;
 
             case DSI::DisconnectRequest:
-            {            
+            {                        
                CServer* server = findServer(hdr.serverID);
                if (server)
                {             

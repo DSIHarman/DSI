@@ -57,26 +57,36 @@ void <%= classname %>::processRequest( DSI::Private::CDataRequestHandle &handle 
    case <%= method.getDSIUpdateIdName( true ) %>:
       {
          <% if( method.isRegister()  || method.isUnregister() ) { %>
-         mSessionId = findSessionId( handle.getSequenceNumber(), mClientID );
+         SessionData* session = findSession(handle.getSequenceNumber(), mClientID);
+         if (session)
+         {
+            mSessionId = session->sessionId;
+         }
          <% } %>
 
          <% if( method.isUnregister() ) { %>
-         if( DSI::INVALID_SESSION_ID != mSessionId )
+         if (mSessionId != DSI::INVALID_SESSION_ID)
          {
-            <%= method.getMethodName() %>( mSessionId );
-            removeSession( mSessionId );
+            <%= method.getMethodName() %>(mSessionId);
+            removeSession(mSessionId);
          }
 
          <% } else { %>
          <% if( method.isRegister()) { %>
          if( DSI::INVALID_SESSION_ID == mSessionId )
          {
-                  SessionData sd ;
-                  sd.sessionId = DSI::createId();
-                  sd.clientID = mClientID ;
-                  sd.sequenceNr = handle.getSequenceNumber();
-                  mSessions.push_back( sd );
+            SessionData sd ;
+            sd.sessionId = DSI::createId();
+            sd.clientID = mClientID ;
+            sd.sequenceNr = handle.getSequenceNumber();
+            sd.updateId = <%= method.getDSIUpdateIdName( true ) %>;
+            mSessions.push_back( sd );
 
+            mSessionId = sd.sessionId;
+         }
+         else
+         {
+            session->updateId = <%= method.getDSIUpdateIdName( true ) %>;
          }
 		 <% } %>
          <% for( Value parameter : method.getParameters() ) { %>
@@ -104,6 +114,47 @@ void <%= classname %>::processRequest( DSI::Private::CDataRequestHandle &handle 
 <% } %>
 <% } %>
 }
+
+
+void <%= classname %>::removeAllSessions(const SPartyID& clientID)
+{   
+   // prepare environment
+   mClientID = clientID;   
+   
+   for(sessionlist_type::iterator iter = mSessions.begin(); iter != mSessions.end(); )
+   {
+      if (iter->clientID == clientID)
+      {        
+         // prepare further environment      
+         mCurrentSequenceNr = iter->sequenceNr;
+         
+         switch(iter->updateId)
+         {
+         <% for (Method method : requestMethods) { %>
+            <% if (method.isRegister()) { %>
+         case <%= method.getDSIUpdateIdName( true ) %>:
+            un<%= method.getMethodName() %>(iter->sessionId);            
+            break;
+            
+            <% } %>
+         <% } %>         
+         default:
+            // NOOP
+            break;
+         }
+         
+         mCurrentSequenceNr = DSI::INVALID_SEQUENCE_NR;
+         
+         // drop the entry
+         iter = mSessions.erase(iter);
+      }
+      else
+         ++iter;
+   }
+   
+   mClientID = 0;
+}
+
 
 <% for( Method method : responseMethods ) { %>
 <%= helper.createMethodDeclaration( method, si, classname, false, null ) %>

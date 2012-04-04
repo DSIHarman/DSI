@@ -51,6 +51,7 @@ class <%= classname %> : public DSI::CServer
    using DSI::CServer::findClientConnection;   
          
 public:
+
    /**
     * Constructor.
     */
@@ -188,6 +189,11 @@ private:
 	 */
    virtual void processRequest( DSI::Private::CDataRequestHandle &handle ) ;
 
+   /**
+    * Removes all sessions for the given clientID and calls the appropriate user-callbacks.
+    */
+   virtual void removeAllSessions(const SPartyID& clientID);
+   
    /**
     * Returns the current attribute state.
     */

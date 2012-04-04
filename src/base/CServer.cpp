@@ -334,9 +334,13 @@ void DSI::CServer::handleDataRequest( Private::CDataRequestHandle &handle )
                n.sequenceNr = handle.getSequenceNumber();
 
                // server side session id
-               n.sessionId = findSessionId( n.sequenceNr, clientID ) ;
+               SessionData* session = findSession(n.sequenceNr, clientID);
 
-               if( DSI::INVALID_SESSION_ID == n.sessionId )
+               if (session)
+               {
+                  n.sessionId = session->sessionId;   
+               }
+               else
                {
                   SessionData sd ;
                   sd.sessionId = n.sessionId = DSI::createId();
@@ -398,10 +402,11 @@ void DSI::CServer::handleDataRequest( Private::CDataRequestHandle &handle )
 
       case DSI::REQUEST_STOP_ALL_REGISTER_NOTIFY:
       {
-         int32_t sessionHandle = findSessionId( handle.getSequenceNumber(), handle.getClientID() );
-         if( DSI::INVALID_SESSION_ID != sessionHandle )
+         // this is currently never sent by a normal client, just MoCCA clients send this
+         SessionData* session = findSession( handle.getSequenceNumber(), handle.getClientID() );
+         if (session)
          {
-            removeSessionNotifications( sessionHandle );
+            removeSessionNotifications(session->sessionId);
          }
       }
       break;
@@ -412,9 +417,9 @@ void DSI::CServer::handleDataRequest( Private::CDataRequestHandle &handle )
 }
 
 
-int32_t DSI::CServer::findSessionId( int32_t seqNr, const SPartyID &clientID )
+DSI::CServer::SessionData* DSI::CServer::findSession(int32_t seqNr, const SPartyID &clientID)
 {
-   int32_t sessionId = DSI::INVALID_SESSION_ID ;
+   SessionData* session = 0;
 
    if (seqNr != DSI::INVALID_SEQUENCE_NR)
    {
@@ -422,13 +427,13 @@ int32_t DSI::CServer::findSessionId( int32_t seqNr, const SPartyID &clientID )
       {
          if( riter->clientID == clientID && riter->sequenceNr == seqNr )
          {
-            sessionId = riter->sessionId ;
+            session = &*riter;
             break;
          }
       }
    }
 
-   return sessionId ;
+   return session;
 }
 
 
@@ -791,9 +796,15 @@ void DSI::CServer::handleDisconnectRequest( const SPartyID &clientID )
       // remove all client notifications
       removeNotification( iter->clientID );
 
+      // remove all currently opened register sessions
+      removeAllSessions(iter->clientID);
+
+      // remove all unblocked sessions
+      removeUnblockedSessions(iter->clientID);
+      
       // remove the client connection from the list
       mClientConnections.erase(iter);
-   }
+   } 
 }
 
 
@@ -813,12 +824,39 @@ bool DSI::CServer::handleClientDetached(int id)
       // remove all client notifications
       removeNotification( iter->clientID );
 
+      // remove all currently opened register sessions
+      removeAllSessions(iter->clientID);
+
+      // remove all unblocked sessions
+      removeUnblockedSessions(iter->clientID);
+      
       // remove the client connection from the list
       mClientConnections.erase(iter);
+      
       retval = true;
    }
-
+   
    return retval;
+}
+
+
+void DSI::CServer::removeUnblockedSessions(const SPartyID& clientID)
+{
+   for(unblockedsessionsmap_type::iterator iter = mUnblockedSessions.begin(); iter != mUnblockedSessions.end();)
+   {
+      if (iter->second.clientID == clientID)
+      {  
+         // where to continue
+         unblockedsessionsmap_type::iterator next = iter;
+         ++next;
+       
+         // remove it since the client will never get a response back       
+         mUnblockedSessions.erase(iter);
+         iter = next;
+      }
+      else
+         ++iter;
+   }
 }
 
 

@@ -193,12 +193,14 @@ namespace DSI
          int32_t sessionId;    ///< the session id for sessions
          SPartyID clientID;    ///< the id of the client that set the notification
          int32_t sequenceNr;   ///< the sequence number of this session
+         uint32_t updateId;    ///< correlated updateId only used for register methods
 
          /// Create an invalid session data object.
          inline
          SessionData()
-            : sessionId(DSI::INVALID_SESSION_ID)
-            , sequenceNr(DSI::INVALID_SEQUENCE_NR)
+            : sessionId(INVALID_SESSION_ID)
+            , sequenceNr(INVALID_SEQUENCE_NR)
+            , updateId(INVALID_ID)
          {
             // NOOP
          }
@@ -246,11 +248,13 @@ namespace DSI
      
       /**
        * Find a session by the given sequence number and client-id. Sessions are created during the
-       * call of a REQUEST_REGISTER_NOTIFY. Afterwards the client sends a data request is sent to
+       * call of a REQUEST_REGISTER_NOTIFY. Afterwards the client sends a data request to
        * transport all register related user-data to the server.
+       *
+       * @return a pointer to the session object if found, else 0.
        */
-      int32_t findSessionId( int32_t seqNr, const SPartyID &clientID );
-
+      SessionData* findSession(int32_t seqNr, const SPartyID &clientID);
+      
       /**
        * @return the session id of the current register call. This method will only return a valid
        *         session id within the context of a register callback. Otherwise it will raise an
@@ -323,6 +327,12 @@ namespace DSI
        * filled with @c addActiveSession.
        */
       void clearActiveSessions();
+
+      /**
+       * Will be called on disconnect requests or transport deaths so all callback handlers will be 
+       * evaluated.
+       */
+      virtual void removeAllSessions(const SPartyID& clientID) = 0;
 
       /**
        * Will be called from within generated code on an unregistration register call.
@@ -483,6 +493,11 @@ namespace DSI
        */
       void unregisterInterface();
 
+      /**
+       * Remove all unblocked sessions associated with the given clientID.
+       */
+      void removeUnblockedSessions(const SPartyID& clientID);
+      
       /// list of all active sessions
       activesessionlist_type mActiveSessions;
 
