@@ -130,7 +130,7 @@ namespace DSI
 
       /// Connecting a server is a multi-step operation with individual asynchronous steps. This
       /// pointer holds the object as long as a connection operation is in progress.
-      std::auto_ptr<CClientConnectSM> mConnector;
+      std::unique_ptr<CClientConnectSM> mConnector;
 
       uint16_t mProtoMinor;
 

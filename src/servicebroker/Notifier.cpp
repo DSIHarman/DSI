@@ -13,7 +13,7 @@
 
 #include "JobQueue.hpp"
 #include "Log.hpp"
-#include "dsi/private/static_assert.hpp"
+
 
 
 Notifier::Notifier(int fd)
@@ -35,7 +35,7 @@ Notifier::~Notifier()
 
 void Notifier::jobFinished(Job& job)
 {
-   DSI_STATIC_ASSERT(sizeof(&job) == 4);   
+   static_assert(sizeof(&job) == 4);   
    
    InternalNotification n = { PULSE_JOB_EXECUTED, (int32_t)&job };
    while(::write(fd_, &n, sizeof(n)) < 0 && errno == EINTR);  // FIXME loop correctly?   

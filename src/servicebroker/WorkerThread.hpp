@@ -97,7 +97,7 @@ private:
    MasterAdapter* mAster;
 
    // internal event notifier
-   std::auto_ptr<Notifier> mNotifier;
+   std::unique_ptr<Notifier> mNotifier;
 };
 
 

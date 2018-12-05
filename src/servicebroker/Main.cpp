@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
    ::openlog("servicebroker", LOG_CONS, LOG_USER);
 
    // master adapter is optional -> a master does not have it :)
-   std::auto_ptr<MasterAdapter> masterAdapter(0);   
+   std::unique_ptr<MasterAdapter> masterAdapter(nullptr);
    
    if (masterAddress)   
       masterAdapter.reset(new MasterAdapter(masterAddress));           // is slave                     

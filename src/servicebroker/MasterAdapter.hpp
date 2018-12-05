@@ -94,7 +94,7 @@ private:
    /// execute a single job and send an appropriate notification
    bool execute(Job& job, Notifier& notifier);
 
-   std::auto_ptr<MasterConnectorSocket> mConnector;
+   std::unique_ptr<MasterConnectorSocket> mConnector;
    const char* mAddress;
 
    JobQueue mQueue;

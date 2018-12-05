@@ -206,7 +206,7 @@ void CPingPongTest<ServerInSeparateThread>::testPingPongImpl(Mode mode, bool /*t
    DSI::CCommEngine engine;
    DSI::CCommEngine serverEngine;
    
-   std::auto_ptr<CPingPongTestServer> server(0);
+   std::unique_ptr<CPingPongTestServer> server(nullptr);
    pthread_t tid;   
    
    if (ServerInSeparateThread)

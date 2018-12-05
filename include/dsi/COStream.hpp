@@ -183,7 +183,7 @@ template<typename T>
 inline                                       
 DSI::COStream& operator<<(DSI::COStream& str, const T& t) 
 {     
-   DSI_STATIC_ASSERT(std::tr1::is_enum<T>::value);
+   static_assert(std::tr1::is_enum<T>::value);
    
    return str.write((uint32_t)t);                                
 }      

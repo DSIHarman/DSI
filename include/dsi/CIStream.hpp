@@ -228,7 +228,7 @@ template<typename T>
 inline                                       
 DSI::CIStream& operator>>(DSI::CIStream& str, T& t) 
 {     
-   DSI_STATIC_ASSERT(std::tr1::is_enum<T>::value);
+   static_assert(std::tr1::is_enum<T>::value);
    
    str.read((uint32_t&)t);         
    return str;   

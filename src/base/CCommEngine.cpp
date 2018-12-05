@@ -13,7 +13,7 @@
 #include "dsi/CRequestWriter.hpp"
 #include "dsi/Log.hpp"
 
-#include "dsi/private/static_assert.hpp"
+
 #include "dsi/private/CNonCopyable.hpp"
 
 #include "CTraceManager.hpp"
@@ -660,9 +660,9 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
                else
                {
                   // send back an invalid message as error message
-                  DSI_STATIC_ASSERT(sizeof(DSI::ConnectRequestInfo) == sizeof(DSI::TCPConnectRequestInfo));
+                  static_assert(sizeof(DSI::ConnectRequestInfo) == sizeof(DSI::TCPConnectRequestInfo));
 
-                  if (dynamic_cast<CTCPChannel*>(chnl.get()) != 0)
+                  if (dynamic_cast<CTCPChannel*>(chnl.get()) != nullptr)
                   {                     
                      // legacy stuff
                      DSI::TCPConnectRequestInfo cri = { 0, 0 };
@@ -833,7 +833,7 @@ int32_t DSI::CCommEngine::Private::getIPPort()
 
 DSI::CServer* DSI::CCommEngine::Private::findServer( const SPartyID& serverID )
 {
-   CServer* rc = 0;
+   CServer* rc = nullptr;
    partycache_type::iterator iter = mServerCache.find(serverID);
 
    if (iter != mServerCache.end())
@@ -857,7 +857,7 @@ DSI::CServer* DSI::CCommEngine::Private::findServer( const SPartyID& serverID )
 
 DSI::CClient* DSI::CCommEngine::Private::findClient( const SPartyID& clientID )
 {
-   CClient* rc = 0;
+   CClient* rc = nullptr;
    partycache_type::iterator iter = mClientCache.find(clientID);
 
    if (iter != mClientCache.end())
@@ -882,14 +882,14 @@ DSI::CClient* DSI::CCommEngine::Private::findClient( const SPartyID& clientID )
 DSI::CClient* DSI::CCommEngine::Private::findClient( int32_t id )
 {
    clientlist_type::iterator iter = std::find_if(mClientList.begin(), mClientList.end(), FindById(id));
-   return iter != mClientList.end() ? *iter : 0;
+   return iter != mClientList.end() ? *iter : nullptr;
 }
 
 
 DSI::CServer* DSI::CCommEngine::Private::findServer( int32_t id )
 {
    serverlist_type::iterator iter = std::find_if(mServerList.begin(), mServerList.end(), FindById(id));
-   return iter != mServerList.end() ? *iter : 0;
+   return iter != mServerList.end() ? *iter : nullptr;
 }
 
 
@@ -990,7 +990,7 @@ bool DSI::CCommEngine::remove( CServer &server )
    if (this == server.mCommEngine)
    {
       d->remove(server);
-      server.mCommEngine = 0 ;
+      server.mCommEngine = nullptr ;
 
       return true ;
    }
@@ -1139,13 +1139,13 @@ public:
    inline
    bool operator()(DSI::GenericEventBase::Result result)
    {
-      DSI_STATIC_ASSERT((int)DSI::CCommEngine::DataAvailable == (int)DSI::GenericEventBase::DataAvailable);
+      static_assert((int)DSI::CCommEngine::DataAvailable == (int)DSI::GenericEventBase::DataAvailable);
 
-      DSI_STATIC_ASSERT((int)DSI::CCommEngine::CanWriteNow == (int)DSI::GenericEventBase::CanWriteNow);
-      DSI_STATIC_ASSERT((int)DSI::CCommEngine::DeviceHungup == (int)DSI::GenericEventBase::DeviceHungup);
+      static_assert((int)DSI::CCommEngine::CanWriteNow == (int)DSI::GenericEventBase::CanWriteNow);
+      static_assert((int)DSI::CCommEngine::DeviceHungup == (int)DSI::GenericEventBase::DeviceHungup);
 
-      DSI_STATIC_ASSERT((int)DSI::CCommEngine::InvalidFileDescriptor == (int)DSI::GenericEventBase::InvalidFileDescriptor);
-      DSI_STATIC_ASSERT((int)DSI::CCommEngine::GenericError == (int)DSI::GenericEventBase::GenericError);
+      static_assert((int)DSI::CCommEngine::InvalidFileDescriptor == (int)DSI::GenericEventBase::InvalidFileDescriptor);
+      static_assert((int)DSI::CCommEngine::GenericError == (int)DSI::GenericEventBase::GenericError);
 
       return mFunc(static_cast<DSI::CCommEngine::IOResult>(result));
    }
