@@ -18,7 +18,7 @@ class Job;
 struct InternalNotification
 {
    uint32_t code;
-   uint32_t value;
+   uint64_t value;
 };   
 
 

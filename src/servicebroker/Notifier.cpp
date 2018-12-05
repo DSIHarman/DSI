@@ -35,9 +35,9 @@ Notifier::~Notifier()
 
 void Notifier::jobFinished(Job& job)
 {
-   static_assert(sizeof(&job) == 4);   
+   static_assert(sizeof(&job) == __WORDSIZE / 8, "");
    
-   InternalNotification n = { PULSE_JOB_EXECUTED, (int32_t)&job };
+   InternalNotification n = { PULSE_JOB_EXECUTED, reinterpret_cast<uint64_t>(&job)};
    while(::write(fd_, &n, sizeof(n)) < 0 && errno == EINTR);  // FIXME loop correctly?   
 }
             
