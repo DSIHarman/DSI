@@ -17,7 +17,10 @@
 using namespace DSI;
 
 
-
+Job::Job(int cookie, SocketMessageContext *ctx, dcmd_t dcmd, size_t sbytes, size_t rbytes)
+{
+    /// TODO: the body was missing.
+}
 
 /*static*/
 Job* Job::create(SocketMessageContext& msg, int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
@@ -93,13 +96,12 @@ const SocketConnectionContext& Job::getConnectionContext()
 }
 
 
-
 // ------------------------------------------------------------------------------
 
 
 JobQueue::JobQueue()
- : mFront(nullptr)
- , mBack(nullptr)
+    : mFront(nullptr)
+    , mBack(nullptr)
  , mSize(0)
  , mTotalCounter(0)
 {

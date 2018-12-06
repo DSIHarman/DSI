@@ -261,7 +261,7 @@ namespace DSI
 
     int              mSBNotifyChid;
     int              mLocalChid;
-    int              mSenderTid;
+    long             mSenderTid;
     bool             mActive;
 
     clientlist_type  mClientList;
@@ -641,7 +641,10 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
           {
             if (dynamic_cast<CTCPChannel*>(chnl.get()) != nullptr)
             {
-              CTCPConnectRequestHandle handle(hdr, chnl, *(DSI::TCPConnectRequestInfo*)reader.buffer());
+              CTCPConnectRequestHandle handle(hdr, chnl,
+                                              *const_cast<DSI::TCPConnectRequestInfo*> (
+                                                  reinterpret_cast<const DSI::TCPConnectRequestInfo*>(reader.buffer() ))
+                                              );
               if (hdr.packetLength == sizeof(DSI::TCPConnectRequestInfo))
               {
                 server->handleLegacyConnectRequestTCP(handle);
@@ -653,7 +656,10 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
             }
             else
             {
-              CConnectRequestHandle handle(hdr, chnl, *(DSI::ConnectRequestInfo*)reader.buffer());
+              CConnectRequestHandle handle(hdr, chnl,
+                                           *const_cast<DSI::ConnectRequestInfo*> (
+                                               reinterpret_cast<const DSI::ConnectRequestInfo*>(reader.buffer() ))
+                                           );
               server->handleConnectRequest(handle);
             }
           }
@@ -703,7 +709,10 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
 
           if (client)
           {
-            CConnectRequestHandle handle(hdr, chnl, *(DSI::ConnectRequestInfo*)reader.buffer());
+            CConnectRequestHandle handle(hdr, chnl,
+                                         *const_cast<DSI::ConnectRequestInfo*> (
+                                             reinterpret_cast<const DSI::ConnectRequestInfo*>(reader.buffer() ))
+                                         );
             client->handleConnectResponse(handle);
           }
         }
@@ -758,7 +767,7 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
 void DSI::CCommEngine::Private::handlePulse( sb_pulse_t &pulse )
 {
   TRC_SCOPE( dsi_base, CCommEngine, handlePulse );
-  DBG_MSG(( "CCommEngine::handlePulse() %s", DSI::toString((DSI::PulseCode)pulse.code)));
+  DBG_MSG(( "CCommEngine::handlePulse() %s", DSI::toString(static_cast<DSI::PulseCode>(pulse.code))));
 
   switch( pulse.code )
   {
@@ -1139,13 +1148,18 @@ public:
   inline
   bool operator()(DSI::GenericEventBase::Result result)
   {
-    static_assert((int)DSI::CCommEngine::DataAvailable == (int)DSI::GenericEventBase::DataAvailable, "");
+    static_assert(static_cast<int64_t>(DSI::CCommEngine::DataAvailable)
+                  == static_cast<int64_t>(DSI::GenericEventBase::DataAvailable), "");
 
-    static_assert((int)DSI::CCommEngine::CanWriteNow == (int)DSI::GenericEventBase::CanWriteNow, "");
-    static_assert((int)DSI::CCommEngine::DeviceHungup == (int)DSI::GenericEventBase::DeviceHungup, "");
+    static_assert(static_cast<int64_t>(DSI::CCommEngine::CanWriteNow)
+                  == static_cast<int64_t>(DSI::GenericEventBase::CanWriteNow), "");
+    static_assert(static_cast<int64_t>(DSI::CCommEngine::DeviceHungup)
+                  == static_cast<int64_t>(DSI::GenericEventBase::DeviceHungup), "");
 
-    static_assert((int)DSI::CCommEngine::InvalidFileDescriptor == (int)DSI::GenericEventBase::InvalidFileDescriptor, "");
-    static_assert((int)DSI::CCommEngine::GenericError == (int)DSI::GenericEventBase::GenericError, "");
+    static_assert(static_cast<int64_t>(DSI::CCommEngine::InvalidFileDescriptor)
+                  == static_cast<int64_t>(DSI::GenericEventBase::InvalidFileDescriptor), "");
+    static_assert(static_cast<int64_t>(DSI::CCommEngine::GenericError)
+                  == static_cast<int64_t>(DSI::GenericEventBase::GenericError), "");
 
     return mFunc(static_cast<DSI::CCommEngine::IOResult>(result));
   }
@@ -1157,11 +1171,15 @@ private:
 
 
 /*static*/
-void DSI::CCommEngine::pimplCCommEngineAddGenericDevice(
-  void* d, int fd, DSI::CCommEngine::DataFlowDirection dir,
-  const std::tr1::function<bool(DSI::CCommEngine::IOResult)>& handler)
+void DSI::CCommEngine::pimplCCommEngineAddGenericDevice(void* d,
+                                                        int fd,
+                                                        DSI::CCommEngine::DataFlowDirection dir,
+                                                        const std::tr1::function<bool(DSI::CCommEngine::IOResult)>& handler)
 {
   static short toPoll[] = { POLLIN, POLLOUT, POLLIN|POLLOUT };
-  ((DSI::CCommEngine::Private*)d)->mDispatch.enqueueEvent(
-    fd, new GenericEvent<CFunctionForwarder>(CFunctionForwarder(handler)), (short)toPoll[dir - 1]);
+  reinterpret_cast<DSI::CCommEngine::Private*>(d)->mDispatch.enqueueEvent(
+              fd,
+              new GenericEvent<CFunctionForwarder>(CFunctionForwarder(handler)),
+              (short)toPoll[dir - 1]
+          );
 }

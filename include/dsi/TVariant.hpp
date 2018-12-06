@@ -373,7 +373,7 @@ namespace DSI
       if (typeIdOf<T>::value != mIdx)
          return nullptr;
 
-      return (T*)&mData;
+      return const_cast<T*>(reinterpret_cast<const T*>(&mData));
    }
 
 
@@ -387,7 +387,7 @@ namespace DSI
       if (typeIdOf<T>::value != mIdx)
          return nullptr;
 
-      return (const T*)(&mData);
+      return const_cast<T*>(reinterpret_cast<const T*>(&mData));
    }
 
 
@@ -508,7 +508,7 @@ public:
    bool operator()(const T& t)
    {
       const T* val = mVar.template get<T>();
-      return val != 0 && *val == t;
+      return val != nullptr && *val == t;
    }
 
 

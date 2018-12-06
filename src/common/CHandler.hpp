@@ -214,7 +214,7 @@ namespace DSI
          if (revents & TraitsT::poll_mask)
          {
             // FIXME remove this curiously recurring template pattern - it's too curious
-            return ((ImplementorT*)this)->doEval(fd);
+            return static_cast<ImplementorT*>(this)->doEval(fd);
          }
          else
             return evalPollErrors(revents);

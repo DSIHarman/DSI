@@ -90,7 +90,7 @@ namespace DSI
          mWriter.pbump((-mWriter.size()/*=current offset*/) & (sizeof(T)/*=alignment*/ - 1));
 
          // copy data to the buffer
-         *(T*)(mWriter.pptr()) = value ;
+         *(T*)(mWriter.pptr()) = value;
 
          // increase buffer size
          mWriter.pbump(sizeof(T));
@@ -123,7 +123,7 @@ namespace DSI
    inline
    COStream& COStream::write(const std::string& buf)
    {
-      write((uint32_t)buf.size());
+      write(static_cast<uint32_t>(buf.size()) );
 
       if (0 != buf.size())
          (void)write(buf.data(), buf.size());

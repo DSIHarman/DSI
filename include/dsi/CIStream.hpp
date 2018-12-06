@@ -144,7 +144,7 @@ namespace DSI
          // checking if there is enough data in the stream
          if((mOffset+sizeof(T)) <= mSize )
          {
-            value = *(T*)(mData+mOffset) ;
+            value = *const_cast<T*>(reinterpret_cast<const T*>(mData+mOffset));
             mOffset += sizeof(T) ;
          }
          else
