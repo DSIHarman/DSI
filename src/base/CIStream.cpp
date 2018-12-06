@@ -24,59 +24,59 @@ DSI::CIStream::CIStream(const char* payload, size_t len)
  , mOffset(0)
  , mError(0)
 {
-   // NOOP
+  // NOOP
 }
 
 
 void DSI::CIStream::read( std::wstring& str )
 {
-   if( 0 == mError )
-   {
-      uint32_t numOfBytes = 0;
-      read(numOfBytes);
+  if( 0 == mError )
+  {
+    uint32_t numOfBytes = 0;
+    read(numOfBytes);
 
-      // use a local buffer so that a single read() suffices
-      if( 0 == mError && numOfBytes > 0 )
+    // use a local buffer so that a single read() suffices
+    if( 0 == mError && numOfBytes > 0 )
+    {
+      if(numOfBytes <= (mSize-mOffset))
       {
-         if(numOfBytes <= (mSize-mOffset))
-         {
-            std::string tmp(mData + mOffset, numOfBytes-1);
-            str = fromUTF8(tmp);
+        std::string tmp(mData + mOffset, numOfBytes-1);
+        str = fromUTF8(tmp);
 
-            mOffset += numOfBytes ;
-         }
-         else
-         {
-            mError = ERANGE ;
-         }
+        mOffset += numOfBytes ;
       }
       else
-         str.clear();
-   }
+      {
+        mError = ERANGE ;
+      }
+    }
+    else
+      str.clear();
+  }
 }
 
 
 void DSI::CIStream::read( std::string& buf )
 {
-   if( 0 == mError )
-   {
-      uint32_t numOfBytes = 0;
-      read( numOfBytes );
+  if( 0 == mError )
+  {
+    uint32_t numOfBytes = 0;
+    read( numOfBytes );
 
-      // use a local buffer so that a single read() suffices
-      if( 0 == mError && numOfBytes > 0 )
+    // use a local buffer so that a single read() suffices
+    if( 0 == mError && numOfBytes > 0 )
+    {
+      if(numOfBytes <= (mSize-mOffset))
       {
-         if(numOfBytes <= (mSize-mOffset))
-         {
-            std::string tmp(mData + mOffset, numOfBytes);   // STL string will store any data, even 0's
-            buf = tmp;
+        std::string tmp(mData + mOffset, numOfBytes);   // STL string will store any data, even 0's
+        buf = tmp;
 
-            mOffset += numOfBytes ;
-         }
-         else
-            mError = ERANGE ;
+        mOffset += numOfBytes ;
       }
       else
-         buf.clear();
-   }
+        mError = ERANGE ;
+    }
+    else
+      buf.clear();
+  }
 }

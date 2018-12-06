@@ -11,53 +11,53 @@
 /*static*/
 size_t DSI::Private::CBuffer::one2one(size_t newCapacity)
 {
-   return newCapacity;
+  return newCapacity;
 }
 
 
 /*static*/
 size_t DSI::Private::CBuffer::powerOf2(size_t newCapacity)
 {
-   size_t rc = sizeof(mBuffer);   // minimum is double size of static buffer
+  size_t rc = sizeof(mBuffer);   // minimum is double size of static buffer
 
-   while(rc < newCapacity)
-      rc <<= 1;
+  while(rc < newCapacity)
+    rc <<= 1;
 
-   return rc;
+  return rc;
 }
 
 
 bool DSI::Private::CBuffer::setCapacity(size_t newCapacity)
 {
-   bool rc = true;
+  bool rc = true;
 
-   // only if not within static memory CBuffer
-   if (newCapacity > sizeof(mBuffer))
-   {
-      // only expand, never shrink
-      if (newCapacity > mCapacity)
+  // only if not within static memory CBuffer
+  if (newCapacity > sizeof(mBuffer))
+  {
+    // only expand, never shrink
+    if (newCapacity > mCapacity)
+    {
+      bool needMemcpy = false;
+      if (mBuf == mBuffer)
       {
-         bool needMemcpy = false;
-         if (mBuf == mBuffer)
-         {
-            mBuf = nullptr;
-            needMemcpy = true;
-         }
-
-         size_t actualNewCapacity = mCalculator(newCapacity);
-
-         mBuf = (char*)::realloc(mBuf, actualNewCapacity);
-         if (mBuf)
-         {
-            mCapacity = actualNewCapacity;
-
-            if (needMemcpy)
-               memcpy(mBuf, mBuffer, size());
-         }
-         else
-            rc = false;
+        mBuf = nullptr;
+        needMemcpy = true;
       }
-   }
 
-   return rc;
+      size_t actualNewCapacity = mCalculator(newCapacity);
+
+      mBuf = (char*)::realloc(mBuf, actualNewCapacity);
+      if (mBuf)
+      {
+        mCapacity = actualNewCapacity;
+
+        if (needMemcpy)
+          memcpy(mBuf, mBuffer, size());
+      }
+      else
+        rc = false;
+    }
+  }
+
+  return rc;
 }

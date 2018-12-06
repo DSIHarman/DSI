@@ -10,13 +10,13 @@
 
 namespace /*anonymous*/
 {
-   volatile uint32_t NextID = 1 ;
+  volatile uint32_t NextID = 1 ;
 }
 
 
 uint32_t DSI::createId()
 {
-   return __sync_fetch_and_add( &NextID, 1 );
+  return __sync_fetch_and_add( &NextID, 1 );
 }
 
 

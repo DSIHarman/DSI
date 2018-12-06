@@ -19,56 +19,56 @@ bool Log::sLogConsole = false ;
 
 namespace /*anonymous*/
 {
-   int syslog_type[] = { LOG_NOTICE, LOG_WARNING, LOG_ERR };
+  int syslog_type[] = { LOG_NOTICE, LOG_WARNING, LOG_ERR };
 }
 
 
 void Log::setLevel( int level )
 {
-   sSBLogLevel = level ;
+  sSBLogLevel = level ;
 }
 
 
 int Log::getLevel()
 {
-   return sSBLogLevel ;
+  return sSBLogLevel ;
 }
 
 
 void Log::setType( char c )
 {
-   sSBType =  c ;
+  sSBType =  c ;
 }
 
 
 void Log::setLogConsole( bool b )
 {
-   sLogConsole = b ;
+  sLogConsole = b ;
 }
 
 
 void Log::printMessage( eSBLogType type, int level, const char *format, va_list arglist )
 {
-   char buffer[512];
-   const char* typeStr = "";
+  char buffer[512];
+  const char* typeStr = "";
 
-   (void)vsnprintf( buffer, sizeof(buffer)-1, format, arglist );
+  (void)vsnprintf( buffer, sizeof(buffer)-1, format, arglist );
 
-   switch( type )
-   {
-   case SBLOG_MESSAGE: typeStr = "MSG"; break ;
-   case SBLOG_WARNING: typeStr = "WRN"; break ;
-   case SBLOG_ERROR:   typeStr = "ERR"; break ;
-   }
+  switch( type )
+  {
+  case SBLOG_MESSAGE: typeStr = "MSG"; break ;
+  case SBLOG_WARNING: typeStr = "WRN"; break ;
+  case SBLOG_ERROR:   typeStr = "ERR"; break ;
+  }
 
-   if( sLogConsole )
-   {
-      (void)fflush( stdout );
-      (void)fprintf( stderr, "%06d %d%c %s: %s\n", getpid(), level, sSBType, typeStr, buffer );
-      (void)fflush(stderr);
-      (void)fflush(stdout);
-   }
-      
-   (void)syslog(syslog_type[type], "%05d %d%c %s: %s\n", getpid(), level, sSBType, typeStr, buffer);   
+  if( sLogConsole )
+  {
+    (void)fflush( stdout );
+    (void)fprintf( stderr, "%06d %d%c %s: %s\n", getpid(), level, sSBType, typeStr, buffer );
+    (void)fflush(stderr);
+    (void)fflush(stdout);
+  }
+
+  (void)syslog(syslog_type[type], "%05d %d%c %s: %s\n", getpid(), level, sSBType, typeStr, buffer);   
 }
 

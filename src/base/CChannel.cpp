@@ -10,11 +10,11 @@
 
 DSI::CChannel::CChannel() 
 {
-   // NOOP
+  // NOOP
 }
 
 
 DSI::CChannel::~CChannel()
 {
-   // NOOP
+  // NOOP
 }

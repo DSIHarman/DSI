@@ -20,6 +20,6 @@ SocketConnectionContext::SocketConnectionContext(ClientSpecificData& data, uint3
  , mNodeAddress(nodeAddress)
  , mLocalAddress(localAddress)
 {
-   // NOOP
+  // NOOP
 }
 

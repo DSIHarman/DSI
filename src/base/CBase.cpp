@@ -14,25 +14,25 @@
 
 
 DSI::CBase::CBase( const char* ifname, const char* rolename, int majorVerion, int minorVersion )
-   : mId( DSI::createId() )
-   , mCommEngine(nullptr)
-   , mCurrentSequenceNr( DSI::INVALID_SEQUENCE_NR )
+  : mId( DSI::createId() )
+  , mCommEngine(nullptr)
+  , mCurrentSequenceNr( DSI::INVALID_SEQUENCE_NR )
 {
-   mClientID = 0 ;
-   mServerID = 0 ;
-   mIfDescription.version.majorVersion = majorVerion ;
-   mIfDescription.version.minorVersion = minorVersion ;
-   sprintf( mIfDescription.name, "%s.%s", rolename, ifname );
+  mClientID = 0 ;
+  mServerID = 0 ;
+  mIfDescription.version.majorVersion = majorVerion ;
+  mIfDescription.version.minorVersion = minorVersion ;
+  sprintf( mIfDescription.name, "%s.%s", rolename, ifname );
 }
 
 
 DSI::CBase::~CBase()
 {
-   mCommEngine = nullptr;
+  mCommEngine = nullptr;
 }
 
 
 const char* DSI::CBase::getUpdateIDString(uint32_t /*updateid*/) const
 {
-   return "" ;
+  return "" ;
 }

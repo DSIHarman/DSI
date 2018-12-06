@@ -12,7 +12,7 @@
 
 DSI::Trace::IChannel::~IChannel()
 {
-   // NOOP
+  // NOOP
 }
 
 
@@ -21,5 +21,5 @@ DSI::Trace::IChannel::~IChannel()
 
 void DSI::Trace::init(DSI::Trace::IChannel& channel)
 {
-   CTraceManager::init(channel);
+  CTraceManager::init(channel);
 }

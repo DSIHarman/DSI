@@ -29,97 +29,97 @@ WorkerThread::WorkerThread()
  , mAster(nullptr)
  , mNotifier(nullptr)
 {
-   // NOOP
+  // NOOP
 }
 
 
 WorkerThread::~WorkerThread()
 {
-   stop();
-   (void)mThread.timed_join(1000);
+  stop();
+  (void)mThread.timed_join(1000);
 }
 
 
 void WorkerThread::start(int fd, MasterAdapter& master)
 {
-   assert(fd);
+  assert(fd);
 
-   mAster = &master;
-   mAster->setTrigger(*this);
+  mAster = &master;
+  mAster->setTrigger(*this);
 
-   mNotifier.reset(new Notifier(fd));
+  mNotifier.reset(new Notifier(fd));
 
-   Thread temp(std::tr1::bind(&WorkerThread::run, this));
-   mThread = temp;
+  Thread temp(std::tr1::bind(&WorkerThread::run, this));
+  mThread = temp;
 }
 
 
 void WorkerThread::stop()
 {
-   mActive = false;
-   trigger();
+  mActive = false;
+  trigger();
 }
 
 
 void WorkerThread::run()
 {
-   {
-      sigset_t set;
-      (void)::sigfillset(&set);
-      if (::pthread_sigmask(SIG_SETMASK, &set, nullptr) != 0)
-         Log::error("Cannot set workerthread's signal mask");
-   }
+  {
+    sigset_t set;
+    (void)::sigfillset(&set);
+    if (::pthread_sigmask(SIG_SETMASK, &set, nullptr) != 0)
+      Log::error("Cannot set workerthread's signal mask");
+  }
 
-   bool timeout = true ;
-   Log::message( 3, "workerthread is running" );
+  bool timeout = true ;
+  Log::message( 3, "workerthread is running" );
 
-   mActive = true ;
+  mActive = true ;
 
-   while( mActive )
-   {
-      if( !mAster->isConnected() )
+  while( mActive )
+  {
+    if( !mAster->isConnected() )
+    {
+      mAster->removePending(*mNotifier);
+
+      if( mAster->connect() )
       {
-         mAster->removePending(*mNotifier);
-
-         if( mAster->connect() )
-         {
-            if (!mAster->sendIdPing())
-            {
-               mAster->disconnect();
-            }
-            else
-               mNotifier->masterConnected();
-         }
-         else
-         {
-             sleepMs(SB_MASTERADAPTER_RECONNECT_TIMEOUT);
-         }
+        if (!mAster->sendIdPing())
+        {
+          mAster->disconnect();
+        }
+        else
+          mNotifier->masterConnected();
       }
       else
       {
-         if (mAster->executePending(*mNotifier))
-         {
-            if (timeout)
-            {
-               if (!mAster->sendPing())
-               {
-                  mAster->disconnect();
-                  mNotifier->masterDisconnected();
-               }
-            }
-         }
-         else
-         {
+         sleepMs(SB_MASTERADAPTER_RECONNECT_TIMEOUT);
+      }
+    }
+    else
+    {
+      if (mAster->executePending(*mNotifier))
+      {
+        if (timeout)
+        {
+          if (!mAster->sendPing())
+          {
             mAster->disconnect();
             mNotifier->masterDisconnected();
-         }
-
-         timeout = !mTrigger.timed_wait(SB_MASTERPING_TIMEOUT);
+          }
+        }
       }
-   }
+      else
+      {
+        mAster->disconnect();
+        mNotifier->masterDisconnected();
+      }
 
-   mAster->disconnect();
-   mNotifier->masterDisconnected();
+      timeout = !mTrigger.timed_wait(SB_MASTERPING_TIMEOUT);
+    }
+  }
+
+  mAster->disconnect();
+  mNotifier->masterDisconnected();
 }
 
 

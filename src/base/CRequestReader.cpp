@@ -27,27 +27,27 @@ class CErrnoSafe
 {
 public:
 
-   inline
-   CErrnoSafe()
-    : mError(errno)
-   {
-      // NOOP
-   }
+  inline
+  CErrnoSafe()
+   : mError(errno)
+  {
+    // NOOP
+  }
 
-   inline
-   ~CErrnoSafe()
-   {
-      errno = mError;
-   }
+  inline
+  ~CErrnoSafe()
+  {
+    errno = mError;
+  }
 
-   inline
-   int error() const
-   {
-      return mError;
-   }
+  inline
+  int error() const
+  {
+    return mError;
+  }
 
 private:
-   int mError;
+  int mError;
 };
 
 }   // end namespace
@@ -58,95 +58,95 @@ private:
 
 bool DSI::CRequestReader::receiveAll()
 {
-   TRC_SCOPE(dsi_base, CRequestReader, receiveAll);
+  TRC_SCOPE(dsi_base, CRequestReader, receiveAll);
 
-   bool rc = true;
-   errno = EINVAL;
-      
-   if (mCurrent->packetLength > 0)
-   {
-      if (mBuf.setCapacity(mBuf.size() + mCurrent->packetLength))
+  bool rc = true;
+  errno = EINVAL;
+
+  if (mCurrent->packetLength > 0)
+  {
+    if (mBuf.setCapacity(mBuf.size() + mCurrent->packetLength))
+    {
+      SFNDInterfaceDescription iface;         
+      uint32_t requestId = 0;
+
+      if (!mChnl.recvAll(mBuf.pptr(), mCurrent->packetLength))
       {
-         SFNDInterfaceDescription iface;         
-         uint32_t requestId = 0;
+        CErrnoSafe e;
+        DBG_ERROR(( "CRequestReader: receiving payload failed: errno=%d", e.error() ));
+        rc = false;
+      }
+      else
+      {            
+        if (CTraceManager::resolve(mCurrent->serverID, mCurrent->clientID, iface))            
+        {
+          requestId = reinterpret_cast<const EventInfo*>(mBuf.gptr())->requestID;
 
-         if (!mChnl.recvAll(mBuf.pptr(), mCurrent->packetLength))
-         {
-            CErrnoSafe e;
-            DBG_ERROR(( "CRequestReader: receiving payload failed: errno=%d", e.error() ));
-            rc = false;
-         }
-         else
-         {            
-            if (CTraceManager::resolve(mCurrent->serverID, mCurrent->clientID, iface))            
+          CInputTraceSession session(iface, requestId);
+          if (session.isActive()) 
+          {         
+            session.write(mCurrent, (const EventInfo*)mBuf.gptr(), mBuf.gptr() + sizeof(EventInfo), mCurrent->packetLength - sizeof(EventInfo));
+          }
+          else
+            requestId = 0;
+        }
+
+        mBuf.pbump(mCurrent->packetLength);
+      }
+
+      while((mCurrent->flags & DSI_MORE_DATA_FLAG) && rc)
+      {
+        if (mChnl.recvAll(&mHdr, sizeof(mHdr)))
+        {
+          if (mHdr.packetLength > 0)
+          {
+            if (!mBuf.setCapacity(mBuf.size() + mHdr.packetLength))
             {
-               requestId = reinterpret_cast<const EventInfo*>(mBuf.gptr())->requestID;
-               
-               CInputTraceSession session(iface, requestId);
-               if (session.isActive()) 
-               {         
-                  session.write(mCurrent, (const EventInfo*)mBuf.gptr(), mBuf.gptr() + sizeof(EventInfo), mCurrent->packetLength - sizeof(EventInfo));
-               }
-               else
-                  requestId = 0;
-            }
-
-            mBuf.pbump(mCurrent->packetLength);
-         }
-
-         while((mCurrent->flags & DSI_MORE_DATA_FLAG) && rc)
-         {
-            if (mChnl.recvAll(&mHdr, sizeof(mHdr)))
-            {
-               if (mHdr.packetLength > 0)
-               {
-                  if (!mBuf.setCapacity(mBuf.size() + mHdr.packetLength))
-                  {
-                     DBG_ERROR(("CRequestReader: out of Memory (capacity :%d)", mBuf.size() + mHdr.packetLength));
-                     errno = ENOMEM;
-                     rc = false;
-                  }
-                  else
-                  {
-                     mCurrent = &mHdr;
-
-                     if (!mChnl.recvAll(mBuf.pptr(), mHdr.packetLength))
-                     {
-                        CErrnoSafe e;
-                        DBG_ERROR(("CRequestReader: receiving payload failed: errno=%d", e.error()));
-                        rc = false;
-                     }
-                     else
-                     {             
-                        if (requestId != 0)            
-                        {
-                           CInputTraceSession session(iface, requestId);
-                           if (session.isPayloadEnabled()) 
-                           {                                       
-                              session.write(mCurrent, nullptr, mBuf.pptr(), mHdr.packetLength);
-                           }
-                        }
-                        
-                        mBuf.pbump(mHdr.packetLength);
-                     }
-                  }
-               }
+              DBG_ERROR(("CRequestReader: out of Memory (capacity :%d)", mBuf.size() + mHdr.packetLength));
+              errno = ENOMEM;
+              rc = false;
             }
             else
             {
-               CErrnoSafe e;
-               DBG_ERROR(( "CRequestReader: receiving header (more data) failed: errno=%d", e.error()));
-               rc = false;
-            }
-         }
-      }
-      else
-      {
-         DBG_ERROR(("CRequestReader: out of Memory (capacity :%d)", mBuf.size() + mHdr.packetLength));
-         errno = ENOMEM;
-         rc = false;
-      }
-   }
+              mCurrent = &mHdr;
 
-   return rc;
+              if (!mChnl.recvAll(mBuf.pptr(), mHdr.packetLength))
+              {
+                CErrnoSafe e;
+                DBG_ERROR(("CRequestReader: receiving payload failed: errno=%d", e.error()));
+                rc = false;
+              }
+              else
+              {             
+                if (requestId != 0)            
+                {
+                  CInputTraceSession session(iface, requestId);
+                  if (session.isPayloadEnabled()) 
+                  {                                       
+                    session.write(mCurrent, nullptr, mBuf.pptr(), mHdr.packetLength);
+                  }
+                }
+
+                mBuf.pbump(mHdr.packetLength);
+              }
+            }
+          }
+        }
+        else
+        {
+          CErrnoSafe e;
+          DBG_ERROR(( "CRequestReader: receiving header (more data) failed: errno=%d", e.error()));
+          rc = false;
+        }
+      }
+    }
+    else
+    {
+      DBG_ERROR(("CRequestReader: out of Memory (capacity :%d)", mBuf.size() + mHdr.packetLength));
+      errno = ENOMEM;
+      rc = false;
+    }
+  }
+
+  return rc;
 }
