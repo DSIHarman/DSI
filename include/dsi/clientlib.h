@@ -58,7 +58,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBRegisterInterface( int handle, const char* ifName,
-                            int majorVersion, int minorVersion, int chid,
+                            int majorVersion, int minorVersion, int64_t chid,
                             SPartyID *serverId );
 
 /**
@@ -89,7 +89,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBRegisterGroupInterface( int handle, const char* ifName,
-                                 int majorVersion, int minorVersion, int chid,
+                                 int majorVersion, int minorVersion, int64_t chid,
                                  const char* groupName, SPartyID *serverId );
 
 
@@ -107,7 +107,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBRegisterInterfaceEx( int handle, const struct SFNDInterfaceDescription* ifDescr,
-                              int descrCount, int chid,
+                              int descrCount, int64_t chid,
                               SPartyID *serverId );
 
 /**
@@ -175,7 +175,7 @@ extern "C" {
    int SBAttachInterfaceExtended( int handle, const char* ifName,
                                   int majorVersion, int minorVersion,
                                   struct SConnectionInfo *connInfo,
-                                  int chid, int code, int value,
+                                  int64_t chid, int code, int value,
                                   notificationid_t *notificationID );
 
 /**
@@ -233,7 +233,7 @@ extern "C" {
  */
    int SBSetServerAvailableNotification( int handle, const char* ifName,
                                          int majorVersion, int minorVersion,
-                                         int chid, int code, int value,
+                                         int64_t chid, int code, int value,
                                          notificationid_t *notificationID );
 
 /**
@@ -252,7 +252,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBSetServerDisconnectNotification( int handle, SPartyID serverID,
-                                          int chid, int code, int value,
+                                          int64_t chid, int code, int value,
                                           notificationid_t *notificationID );
 
 /**
@@ -271,7 +271,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBSetClientDetachNotification( int handle, SPartyID clientID,
-                                      int chid, int code, int value,
+                                      int64_t chid, int code, int value,
                                       notificationid_t *notificationID );
 
 
@@ -315,7 +315,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBSetInterfaceListChangeNotification( int handle,
-                                             int chid, int code, int value,
+                                             int64_t chid, int code, int value,
                                              notificationid_t *notificationID );
 
 /**
@@ -354,7 +354,7 @@ extern "C" {
  * @return EOK on success
  */
    int SBSetInterfaceMatchChangeNotification( int handle, const char* regExpr,
-                                              int chid, int code, int value,
+                                              int64_t chid, int code, int value,
                                               notificationid_t *notificationID );
 
 /**

@@ -61,7 +61,7 @@ private:
 
 struct CompNidPidChid
 {
-   CompNidPidChid(int nid, int pid, int chid)
+   CompNidPidChid(int nid, int pid, int64_t chid)
     : nid_(nid)
     , pid_(pid)
     , chid_(chid)
@@ -77,7 +77,7 @@ struct CompNidPidChid
 private:
    int nid_;
    int pid_;
-   int chid_;
+   int64_t chid_;
 };
 
 
@@ -106,7 +106,7 @@ int find(PulseChannelManager::tPulseChannelListType& container, const Comparator
  *
  * @return -1 if given nid/pid/chid triple could not be found, else the associated file descriptor.
  */
-int tryAddRef(PulseChannelManager::tPulseChannelListType& container, int nid, pid_t pid, int chid)
+int tryAddRef(PulseChannelManager::tPulseChannelListType& container, int nid, pid_t pid, int64_t chid)
 {
    int idx = find(container, CompNidPidChid(nid, pid, chid));
 
@@ -254,7 +254,7 @@ PulseChannelManager& PulseChannelManager::getInstance()
 }
 
 
-int PulseChannelManager::attach(int nid, int pid, int chid)
+int PulseChannelManager::attach(int nid, int pid, int64_t chid)
 {
    int rc = -1;
 

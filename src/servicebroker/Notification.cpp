@@ -35,11 +35,11 @@ Notification::Notification()
  : notificationID(++sNextNotificationID)
  , masterNotificationID(INVALID_NOTIFICATION_ID)
  , poolID(0)
- , host(0)
+ , host(nullptr)
  , local(false)
  , uid(SB_UNKNOWN_USER_ID)
  , active(true)
- , regExpr(0)
+ , regExpr(nullptr)
  , coid(-1)
  , prio(0)
  , nid(0)
@@ -106,8 +106,8 @@ Notification::Notification( const Notification& rhs )
 
    // implement move semantics
    Notification* that = const_cast<Notification*>( &rhs ) ;
-   that->host = 0 ;
-   that->regExpr = 0 ;
+   that->host = nullptr ;
+   that->regExpr = nullptr ;
    that->coid = -1 ;
    
    // make sure there is no master interaction on the moved object!

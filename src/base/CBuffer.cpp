@@ -40,7 +40,7 @@ bool DSI::Private::CBuffer::setCapacity(size_t newCapacity)
          bool needMemcpy = false;
          if (mBuf == mBuffer)
          {
-            mBuf = 0;
+            mBuf = nullptr;
             needMemcpy = true;
          }
 

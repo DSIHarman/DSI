@@ -37,9 +37,9 @@ DSI::CClient::CClient( const char* ifname, const char* rolename, int majorVersio
  : CBase( ifname, rolename, majorVersion, minorVersion )
  , mNotificationID( 0 )
  , mChannel(CDummyChannel::getInstancePtr())
- , mConnector(0)
+ , mConnector(nullptr)
  , mProtoMinor(0)
- , d(0)
+ , d(nullptr)
 {
    // NOOP
 }
@@ -50,7 +50,7 @@ DSI::CClient::~CClient()
    if (mCommEngine)
    {
       DSI::CCommEngine* engine = mCommEngine;
-      mCommEngine = 0;
+      mCommEngine = nullptr;
       (void)engine->remove(*this);
    }
 }
@@ -94,7 +94,7 @@ void DSI::CClient::detachInterface(bool resetNotification)
 
    removeNotification();
 
-   mConnector.reset(0);    // drop him if he is in action
+   mConnector.reset(nullptr);    // drop him if he is in action
 
    if (mClientID)
    {

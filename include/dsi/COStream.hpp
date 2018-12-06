@@ -156,11 +156,11 @@ DSI::COStream& operator<<(DSI::COStream& str, const std::wstring& s)
 }
 
 
-#define MAKE_DSI_SERIALIZING_OPERATOR(type)     \
-   inline                                       \
+#define MAKE_DSI_SERIALIZING_OPERATOR(type)              \
+   inline                                                \
    DSI::COStream& operator<<(DSI::COStream& str, type t) \
-   {                                            \
-      return str.write(t);                             \
+   {                                                     \
+      return str.write(t);                               \
    }
 
 MAKE_DSI_SERIALIZING_OPERATOR(int8_t)
@@ -179,14 +179,14 @@ MAKE_DSI_SERIALIZING_OPERATOR(float)
 MAKE_DSI_SERIALIZING_OPERATOR(bool)           
       
       
-template<typename T>      
-inline                                       
-DSI::COStream& operator<<(DSI::COStream& str, const T& t) 
-{     
-   static_assert(std::tr1::is_enum<T>::value);
+template<typename T>
+inline
+DSI::COStream& operator<<(DSI::COStream& str, const T& t)
+{
+   static_assert(std::tr1::is_enum<T>::value, "");
    
-   return str.write((uint32_t)t);                                
-}      
+   return str.write((uint32_t&)t);
+}
 
 
 #define DSI_VARIANT_SERIALIZATIONVISITOR(baseclass)            \

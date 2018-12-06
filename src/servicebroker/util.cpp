@@ -63,7 +63,7 @@ bool setup(const char* command)
  */
 const char* getPortEnvName(int port)
 {
-   const char* envName = 0;
+   const char* envName = nullptr;
 
    switch(port)
    {
@@ -80,7 +80,7 @@ const char* getPortEnvName(int port)
          break;
 
       default:
-         return 0;
+         return nullptr;
    }
 
    return ::getenv(envName);

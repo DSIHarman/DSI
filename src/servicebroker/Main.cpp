@@ -139,10 +139,10 @@ int main(int argc, char *argv[])
 
    int id = -1 ;   
 
-   const char* masterAddress = 0 ;
+   const char* masterAddress = nullptr ;
    const char* mountpoint = FND_SERVICEBROKER_PATHNAME ;
-   const char* config = 0 ;
-   const char* bindIPs = 0 ;
+   const char* config = nullptr ;
+   const char* bindIPs = nullptr ;
 
    // Scan command line
    while( bNextOpt )

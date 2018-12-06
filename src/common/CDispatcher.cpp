@@ -110,7 +110,7 @@ void DSI::Dispatcher::clearSlot(int idx)
 {
    fds_table_[idx].fd = -1;
    delete events_table_[idx];
-   events_table_[idx] = 0;
+   events_table_[idx] = nullptr;
 }
 
 

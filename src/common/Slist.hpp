@@ -77,7 +77,7 @@ namespace DSI
       {
          inline
          SlistBaseHook()
-            : mNext(0)
+            : mNext(nullptr)
          {
             // NOOP
          }
@@ -140,7 +140,7 @@ namespace DSI
       {
          SlistBaseHook* to_unhook = next(d);
          d->mNext = next(to_unhook);
-         to_unhook->mNext = 0;
+         to_unhook->mNext = nullptr;
       }
 
 
@@ -204,7 +204,7 @@ namespace DSI
       {
          DataT* to_unhook = next(d);
          (d->*MemberPtr).mNext = next(to_unhook);
-         (to_unhook->*MemberPtr).mNext = 0;
+         (to_unhook->*MemberPtr).mNext = nullptr;
       }
 
 
@@ -214,7 +214,7 @@ namespace DSI
       {
          DataT* to_unhook = next(d);
          d->mNext = reinterpret_cast<SlistBaseHook*>(next(to_unhook));
-         (to_unhook->*MemberPtr).mNext = 0;
+         (to_unhook->*MemberPtr).mNext = nullptr;
       }
 
 
@@ -322,7 +322,7 @@ namespace DSI
 
             inline
             SlistIterator()
-               : ptr_(0)
+               : ptr_(nullptr)
             {
                // NOOP
             }
@@ -604,7 +604,9 @@ namespace DSI
             return const_iterator(tCastType::template safe_cast<const DataT*>(&mFirst));
          }
          else
-            return const_iterator(tCastType::template safe_cast<const DataT*>(mFirst.mNext));
+         {
+             return const_iterator(tCastType::template safe_cast<const DataT*>(mFirst.mNext));
+         }
       }
 
 
@@ -708,7 +710,7 @@ namespace DSI
                iterator tmp(iter);
                if (++tmp == where)
                {
-                  unhookNext(iter.get());
+                  this->unhookNext(iter.get());
                   return ++iter;
                }
             }

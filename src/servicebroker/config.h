@@ -25,8 +25,8 @@
 
 #define SB_LOCAL_NODE_ADDRESS 0
 #define SB_LOCAL_IP_ADDRESS   0x7f000001  // 127.0.0.1
-#define SB_UNKNOWN_USER_ID    -1
-#define SB_UNKNOWN_GROUP_ID    -1
+#define SB_UNKNOWN_USER_ID    0xFFFFFFFF /*-1*/
+#define SB_UNKNOWN_GROUP_ID   0xFFFFFFFF /*-1*/
 #define SB_UNKNOWN_IP_ADDRESS -1
 
 /// ping timeout for inactive slave -> master connections. If no requests are sent from the slave to the master

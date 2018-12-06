@@ -41,8 +41,8 @@ struct ServerListEntry
    InterfaceDescription ifDescription ;
    /** The implementation major version number. */
    SFNDImplementationVersion implVersion ;
-   /** the group id of -1 if everybody has access */
-   int32_t grpid;
+   /** the group id of 0xFFFFFF if everybody has access */
+   uint32_t grpid;
    /** is the service local? */
    bool local ;
 

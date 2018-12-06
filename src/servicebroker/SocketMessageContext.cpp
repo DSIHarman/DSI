@@ -14,9 +14,9 @@
 
 SocketMessageContext::SocketMessageContext()
  : MessageContext()
- , mCtx(0)
- , mReadBuffer(0)
- , mWriteBuffer(0)
+ , mCtx(nullptr)
+ , mReadBuffer(nullptr)
+ , mWriteBuffer(nullptr)
 {
    // NOOP
 }
@@ -34,8 +34,8 @@ SocketMessageContext::SocketMessageContext(SocketConnectionContext& ctxt, tAutoB
 SocketMessageContext::SocketMessageContext(const SocketMessageContext& rhs)
  : MessageContext(rhs)
  , mCtx(rhs.mCtx)  
- , mReadBuffer(0)
- , mWriteBuffer(0)
+ , mReadBuffer(nullptr)
+ , mWriteBuffer(nullptr)
 {
    // NOOP
 }
@@ -47,8 +47,8 @@ SocketMessageContext& SocketMessageContext::operator=(const SocketMessageContext
    {
       MessageContext::operator=(rhs);
       mCtx = rhs.mCtx;
-      mReadBuffer = 0;
-      mWriteBuffer = 0;
+      mReadBuffer = nullptr;
+      mWriteBuffer = nullptr;
    }
    
    return *this;   

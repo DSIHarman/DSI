@@ -17,7 +17,7 @@ class Job;
  */
 struct InternalNotification
 {
-   uint32_t code;
+   uint64_t code;
    uint64_t value;
 };   
 
@@ -53,7 +53,7 @@ public:
    /**
     * Send a pulse with given code/value pair to the local event dispatcher.
     */ 
-   void deliverPulse(int code, int value);
+   void deliverPulse(uint64_t code, uint64_t value);
            
 private:
 

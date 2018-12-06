@@ -92,8 +92,8 @@ void doDaemonize()
    }
 
    i = ::open("/dev/null", O_RDWR); /* open stdin */
-	::dup(i); /* stdout */
-	::dup(i); /* stderr */   
+   (void)::dup(i); /* stdout */
+   (void)::dup(i); /* stderr */
 }
 
 

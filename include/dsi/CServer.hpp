@@ -383,7 +383,7 @@ namespace DSI
        * Send (error) response, the "Error" enum will be converted to uint32_t within the generated code.
        * If @c err is not null, then the corresponding value will be sent.
        */
-      void sendResponse(uint32_t responseId, uint32_t id, DSI::ResultType type, uint32_t* err = 0);
+      void sendResponse(uint32_t responseId, uint32_t id, DSI::ResultType type, uint32_t* err = nullptr);
 
       typedef std::set<ClientConnection> clientconnectionlist_type;
       typedef std::map<int32_t, Notification> unblockedsessionsmap_type;

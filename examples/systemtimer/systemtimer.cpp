@@ -13,6 +13,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include <unistd.h>
 
 using namespace DSI;
 
@@ -38,7 +39,7 @@ public:
          { 1, 0 }
       };
 
-      int rc = timerfd_settime(mFd, 0, &spec, 0);
+      int rc = timerfd_settime(mFd, 0, &spec, nullptr);
       assert(rc == 0);
       (void)rc;
 

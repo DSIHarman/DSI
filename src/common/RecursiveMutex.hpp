@@ -25,7 +25,7 @@ namespace DSI
       inline
       RecursiveMutex()
       {
-         (void)::pthread_mutex_init(&mMutex, 0);
+         (void)::pthread_mutex_init(&mMutex, nullptr);
       }
 
 

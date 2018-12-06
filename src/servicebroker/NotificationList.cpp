@@ -333,7 +333,7 @@ Notification* NotificationList::find( notificationid_t notificationID )
       }
       ++iter ;
    }
-   return 0 ;
+   return nullptr ;
 }
 
 

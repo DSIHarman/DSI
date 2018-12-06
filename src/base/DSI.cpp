@@ -60,7 +60,7 @@ namespace DSI
 
    const char* getLocalIpAddressString()
    {
-      static const char *myAddress = 0;
+      static const char *myAddress = nullptr;
 
       if( !myAddress )
       {

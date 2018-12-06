@@ -15,7 +15,7 @@
 
 DSI::CBase::CBase( const char* ifname, const char* rolename, int majorVerion, int minorVersion )
    : mId( DSI::createId() )
-   , mCommEngine( 0 )
+   , mCommEngine(nullptr)
    , mCurrentSequenceNr( DSI::INVALID_SEQUENCE_NR )
 {
    mClientID = 0 ;
@@ -28,7 +28,7 @@ DSI::CBase::CBase( const char* ifname, const char* rolename, int majorVerion, in
 
 DSI::CBase::~CBase()
 {
-   mCommEngine = 0 ;
+   mCommEngine = nullptr;
 }
 
 

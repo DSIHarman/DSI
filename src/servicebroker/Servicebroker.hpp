@@ -64,7 +64,7 @@ public:
     * @param master 0 if this servicebroker is already the master.
     // FIXME remove NodeIdTranslator - whats this under Linux, does it have any effect???!!!
     */
-   void init(MasterAdapter* master, NodeIdTranslator translator, const char* configfile = 0,
+   void init(MasterAdapter* master, NodeIdTranslator translator, const char* configfile = nullptr,
              int id = 0, bool serverCache = false, bool asyncMode = false);
 
    void setSignallingAddress(const SignallingAddress& addr);
@@ -213,7 +213,7 @@ private:
    void unregisterInterfaceMaster( ServerListEntry& entry );
    void createClearNotificationJob( notificationid_t notificationID );
    bool addInterface( ClientSpecificData &ocb, const InterfaceDescription&, const SocketConnectionContext&, int32_t pid, int32_t chid, bool isLocal, int32_t grpid, SPartyID& serverID );
-   bool checkAccessPrivileges( const SocketConnectionContext& context, ServerListEntry* entry, int32_t uid = SB_UNKNOWN_USER_ID );
+   bool checkAccessPrivileges(const SocketConnectionContext& context, ServerListEntry* entry, uint32_t uid = SB_UNKNOWN_USER_ID );
 
    /**
     * Creates a unique client ID.
@@ -284,7 +284,7 @@ private:
    inline
    bool isMaster() const
    {
-      return mAster == 0;
+      return mAster == nullptr;
    }
 
    inline

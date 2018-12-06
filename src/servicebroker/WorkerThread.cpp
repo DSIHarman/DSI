@@ -18,7 +18,7 @@
 #include "Notifier.hpp"
 #include "MasterAdapter.hpp"
 
-#define sleepMs(timeout) (void)::poll(0, 0, timeout)
+#define sleepMs(timeout) (void)::poll(nullptr, 0, timeout)
 
 using namespace DSI;
 
@@ -26,8 +26,8 @@ using namespace DSI;
 WorkerThread::WorkerThread()
  : mActive(false)
  , mThread()
- , mAster(0)
- , mNotifier(0)
+ , mAster(nullptr)
+ , mNotifier(nullptr)
 {
    // NOOP
 }
@@ -66,7 +66,7 @@ void WorkerThread::run()
    {
       sigset_t set;
       (void)::sigfillset(&set);
-      if (::pthread_sigmask(SIG_SETMASK, &set, 0) != 0)
+      if (::pthread_sigmask(SIG_SETMASK, &set, nullptr) != 0)
          Log::error("Cannot set workerthread's signal mask");
    }
 
@@ -91,7 +91,9 @@ void WorkerThread::run()
                mNotifier->masterConnected();
          }
          else
-            sleepMs(SB_MASTERADAPTER_RECONNECT_TIMEOUT);
+         {
+             sleepMs(SB_MASTERADAPTER_RECONNECT_TIMEOUT);
+         }
       }
       else
       {

@@ -77,14 +77,14 @@ ServerListEntry* ServerList::find( const SFNDInterfaceDescription &ifDescription
       return result ;
    }
 
-   return 0 ;
+   return nullptr;
 }
 
 
 ServerListEntry* ServerList::find(const char* ifName)
 {   
    tContainerType::iterator iter = std::lower_bound(mEntries.begin(), mEntries.end(), ifName, compare);
-   return (iter != mEntries.end() && !compare(ifName, *iter)) ? &*iter : 0;   
+   return (iter != mEntries.end() && !compare(ifName, *iter)) ? &*iter : nullptr;
 }
 
 
@@ -96,7 +96,7 @@ ServerListEntry* ServerList::find( const SPartyID& serverID )
          return &(*iter) ;
    }
 
-   return 0 ;
+   return nullptr;
 }
 
 
@@ -108,7 +108,7 @@ ServerListEntry* ServerList::findByLocalID( uint32_t localID )
          return &(*iter) ;
    }
 
-   return 0 ;
+   return nullptr;
 }
 
 ServerListEntry* ServerList::findByLocalIDandInvalidMasterID( uint32_t localID )
@@ -119,7 +119,7 @@ ServerListEntry* ServerList::findByLocalIDandInvalidMasterID( uint32_t localID )
          return &(*iter) ;
    }
 
-   return 0 ;
+   return nullptr;
 }
 
 
@@ -132,7 +132,7 @@ ServerListEntry* ServerList::find( int32_t id )
          return &(*iter) ;
    }
 
-   return 0 ;
+   return nullptr;
 }
 
 

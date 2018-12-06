@@ -80,7 +80,7 @@ public:
    inline
    operator const void*() const
    {
-      return mThread ? this : 0;
+      return mThread ? this : nullptr;
    }
 
 private:

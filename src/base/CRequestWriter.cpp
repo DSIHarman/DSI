@@ -100,7 +100,7 @@ bool DSI::CRequestWriter::flush()
      
    iov_t iov[3] = {
       { &mHeader, sizeof(mHeader) },
-      { 0, 0 },
+      { nullptr, 0 },
       { const_cast<char*>(mBuf.gptr()), mHeader.packetLength }
    };
    
@@ -115,13 +115,13 @@ bool DSI::CRequestWriter::flush()
          {
             // data message
             session.write(&mHeader, &mInfo, 
-               havePayload() && session.isPayloadEnabled() ? mBuf.gptr() : 0, 
+               havePayload() && session.isPayloadEnabled() ? mBuf.gptr() : nullptr,
                session.isPayloadEnabled() ? mHeader.packetLength - sizeof(DSI::EventInfo) : 0);
          }
          else
          {
             // control message
-            session.write(&mHeader, 0, havePayload() ? mBuf.gptr() : 0, mBuf.size());               
+            session.write(&mHeader, nullptr, havePayload() ? mBuf.gptr() : nullptr, mBuf.size());
          }         
       }
       else
@@ -163,7 +163,7 @@ bool DSI::CRequestWriter::flush()
             COutputTraceSession session(iface, requestId);
             if (session.isPayloadEnabled())
             {
-               session.write(&mHeader, 0, iov[1].iov_base, iov[1].iov_len);
+               session.write(&mHeader, nullptr, iov[1].iov_base, iov[1].iov_len);
             }            
          }   
          

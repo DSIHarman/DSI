@@ -97,7 +97,7 @@ struct DSI::Trace::CStdoutTracer::Private
    const STraceHandle* find(int handle)
    {
       std::map<int, STraceHandle>::const_iterator iter = mHandles.find(handle);
-      return iter == mHandles.end() ? 0 : &iter->second;
+      return iter == mHandles.end() ? nullptr : &iter->second;
    }
    
    void printHeader(const DSI::MessageHeader& hdr, const STraceHandle& thdl)

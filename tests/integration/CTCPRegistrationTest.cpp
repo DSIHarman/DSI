@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <tr1/tuple>
+#include <unistd.h>
 
 #include "dsi/CCommEngine.hpp"
 
@@ -66,7 +67,7 @@ void* serverRunner(void* arg)
    engine->add(server);
          
    CPPUNIT_ASSERT_EQUAL(0, engine->run());
-   return 0;
+   return nullptr;
 }
 
 
@@ -80,7 +81,7 @@ void CTCPRegistrationTest::testTCPBinding()
    DSI::CCommEngine serverEngine;   
    pthread_t tid;      
    
-   CPPUNIT_ASSERT(::pthread_create(&tid, 0, &serverRunner, &serverEngine) == 0);            
+   CPPUNIT_ASSERT(::pthread_create(&tid, nullptr, &serverRunner, &serverEngine) == 0);
    
    // let the server completely enter it's eventloop, otherwise we could call 
    // stop (below) before the server is ready to handle it and therefore block 

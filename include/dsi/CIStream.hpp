@@ -224,15 +224,15 @@ MAKE_DSI_DESERIALIZING_OPERATOR(float)
 MAKE_DSI_DESERIALIZING_OPERATOR(bool)
 
 
-template<typename T>      
-inline                                       
-DSI::CIStream& operator>>(DSI::CIStream& str, T& t) 
-{     
-   static_assert(std::tr1::is_enum<T>::value);
+template<typename T>
+inline
+DSI::CIStream& operator>>(DSI::CIStream& str, T& t)
+{
+   static_assert(std::tr1::is_enum<T>::value, "");
    
-   str.read((uint32_t&)t);         
-   return str;   
-} 
+   str.read((uint32_t&)t);
+   return str;
+}
 
 
 #define DSI_VARIANT_DESERIALIZATIONVISITOR(baseclass)         \

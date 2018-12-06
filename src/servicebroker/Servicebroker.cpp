@@ -6,12 +6,12 @@
 * All rights reserved
 ****************************************************************/
 #include "Servicebroker.hpp"
+#include "JobQueue.hpp"
 #include "Log.hpp"
 #include "MessageContext.hpp"
 #include "ConnectionContext.hpp"
 #include "RegExp.hpp"
 #include "ClientSpecificData.hpp"
-#include "JobQueue.hpp"
 #include "SignallingAddress.hpp"
 #include "config.h"
 
@@ -108,7 +108,7 @@ Servicebroker::Servicebroker()
    , mExtendedID(0)
    , mUseServerCache(false)
    , mAsyncMode(false)
-   , mAster(0)
+   , mAster(nullptr)
 {
    // NOOP
 }
@@ -116,7 +116,7 @@ Servicebroker::Servicebroker()
 
 Servicebroker::~Servicebroker()
 {
-   mAster = 0;
+   mAster = nullptr;
 }
 
 
@@ -681,10 +681,10 @@ SBStatus Servicebroker::forwardAttachExtendedToMaster(SocketMessageContext &msg,
 {
    SBStatus result(FNDOK);
    bool poolFound(true);
-   Job *job(0);
-   struct SFNDInterfaceDescription *ifDescription(0);      
+   Job *job(nullptr);
+   struct SFNDInterfaceDescription *ifDescription(nullptr);
    
-   notificationid_t *outNotificationID(0);      
+   notificationid_t *outNotificationID(nullptr);
    
    ifDescription = &arg.i.ifDescription;   
    outNotificationID = &arg.o.notificationID;   
@@ -855,7 +855,7 @@ void Servicebroker::handleGetServerInformation( SocketMessageContext &msg, Clien
 }
 
 
-bool Servicebroker::checkAccessPrivileges( const SocketConnectionContext& context, ServerListEntry* entry, int32_t uid )
+bool Servicebroker::checkAccessPrivileges( const SocketConnectionContext& context, ServerListEntry* entry, uint32_t uid )
 {
    bool grantAccess = true ;
 
@@ -1407,7 +1407,7 @@ void Servicebroker::handleMatchInterfaceList( SocketMessageContext &msg, ClientS
       char buffer[128];
       (void)re.error( err, buffer, sizeof(buffer)-1);
       Log::error( "RegExp Error: %s /%s/", buffer, arg.i.regExpr );
-      msg.prepareResponse(-(int32_t)FNDRegularExpression, 0, 0 );
+      msg.prepareResponse(-(int32_t)FNDRegularExpression, nullptr, 0 );
    }
    else if( isMasterConnected() )
    {
@@ -2263,7 +2263,7 @@ void Servicebroker::handleJobFinishedAttachExtended(SFNDInterfaceAttachExtendedA
 {
    NotificationPoolEntry::EPoolState poolState(NotificationPoolEntry::STATE_UNDEFINED);
    const uint32_t jobID(static_cast<uint32_t>(job.cookie));
-   Notification *theNotification(0);
+   Notification *theNotification(nullptr);
    int32_t poolPos(-1);
    std::map<uint32_t, tNotificationsGroup>::iterator jobIter = mPendingAttachExtendedJobs.find(jobID);
 
@@ -2397,7 +2397,7 @@ void Servicebroker::handleMasterDisconnected()
    {
       if (iter->active
           && mExtendedID != iter->partyID.s.extendedID
-          && mConnectedServers.find(iter->partyID) == 0)   // server not here...
+          && mConnectedServers.find(iter->partyID) == nullptr)   // server not here...
       {
          iter->send();
          iter = mServerDisconnectNotifications.erase(iter);
@@ -2562,7 +2562,7 @@ void Servicebroker::dispatch(int code, int value)
    {
    case PULSE_JOB_EXECUTED:
    {
-      Job* job = (Job*)value;
+      Job* job = reinterpret_cast<Job*>(value);
       if (job)
       {
          handleJobFinished(*job);

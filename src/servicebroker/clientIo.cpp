@@ -174,9 +174,9 @@ extern "C" int sendAndReceiveV(int fd, dcmd_t cmd, size_t inLen, size_t outLen, 
          
       // try to send via sendmsg on Linux and QNX, if an error occurs
       // get back to sending each frame individually      
-      struct iovec* iov = 0;
+      struct iovec* iov = nullptr;
       
-      if (in[0].iov_base == 0)
+      if (in[0].iov_base == nullptr)
       {
          // later, fill placeholder with request frame structure                  
          iov = in;         
@@ -268,7 +268,7 @@ extern "C" int sendAndReceive(int fd, int cmd, void* ptr, size_t inputlen, size_
       return sendAndReceiveV(fd, cmd, 2, 1, in, &out, rc);
    }
    else   
-      return sendAndReceiveV(fd, cmd, 2, 0, in, 0, rc);
+      return sendAndReceiveV(fd, cmd, 2, 0, in, nullptr, rc);
 }
 
 
@@ -326,14 +326,14 @@ extern "C" int sendAuthPackage(int fd, int sendCredentials)
 }
 
 
-extern "C" const char* make_unix_path(char* buf, size_t len, int pid, int chid)
+extern "C" const char* make_unix_path(char* buf, size_t len, int pid, int64_t chid)
 {
    if (buf && len > 20)
    {
       memset(buf, 0, len);
-      sprintf(buf+1, "%d/%d", pid, chid);      
+      sprintf(buf+1, "%d/%ld", pid, chid);
       return buf;
    }
    
-   return 0;
+   return nullptr;
 }

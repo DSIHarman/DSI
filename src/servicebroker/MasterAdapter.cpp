@@ -91,7 +91,7 @@ struct MasterConnectorSocket : public Private::CNonCopyable
    inline
    bool sendPing()
    {
-      return sendAndReceive(mSock.fd(), DCMD_FND_MASTER_PING, NULL, 0, 0, 0) == 0;
+      return sendAndReceive(mSock.fd(), DCMD_FND_MASTER_PING, nullptr, 0, 0, nullptr) == 0;
    }
 
    inline
@@ -103,7 +103,7 @@ struct MasterConnectorSocket : public Private::CNonCopyable
       data.i.id = Servicebroker::getInstance().id();
       data.i.reserved = 0;
 
-      return sendAndReceive(mSock.fd(), DCMD_FND_MASTER_PING_ID, &data, sizeof(data), 0, 0) == 0;
+      return sendAndReceive(mSock.fd(), DCMD_FND_MASTER_PING_ID, &data, sizeof(data), 0, nullptr) == 0;
    }
 
    inline
@@ -146,7 +146,7 @@ private:
 MasterAdapter::MasterAdapter(const char* address)
    : mConnector(new MasterConnectorSocket(address))
    , mAddress(address)
-   , mTrigger(0)
+   , mTrigger(nullptr)
 {
    // NOOP
 }

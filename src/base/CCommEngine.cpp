@@ -76,7 +76,7 @@ namespace /*anonymous*/
    }
 
 
-   const char* makeLocalPath(char* buf, size_t len, int pid, int chid)
+   const char* makeLocalPath(char* buf, size_t len, int pid, int64_t chid)
    {
       if (buf && len > 23)
       {
@@ -85,7 +85,7 @@ namespace /*anonymous*/
          return buf;
       }
 
-      return 0;
+      return nullptr;
    }
 
 
@@ -117,7 +117,7 @@ namespace DSI
       inline
       void operator()(T t)
       {
-         t->mCommEngine = 0;
+         t->mCommEngine = nullptr;
       }
    };
 
@@ -579,7 +579,7 @@ int DSI::CCommEngine::Private::loop()
    {
       // do not catch CppUnit Exceptions since then CppUnit would show a wrong error;
       // instead of pointing to the correct error it just shows engine.run() == -1
-      if (strstr(typeid(ex).name(), "CppUnit") != 0)
+      if (strstr(typeid(ex).name(), "CppUnit") != nullptr)
          throw;
       
       Log::syslog(Log::Critical, "Unhandled exception in CCommEngine: %s", ex.what());      
@@ -639,7 +639,7 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
 
                if (server)
                {
-                  if (dynamic_cast<CTCPChannel*>(chnl.get()) != 0)
+                  if (dynamic_cast<CTCPChannel*>(chnl.get()) != nullptr)
                   {
                      CTCPConnectRequestHandle handle(hdr, chnl, *(DSI::TCPConnectRequestInfo*)reader.buffer());
                      if (hdr.packetLength == sizeof(DSI::TCPConnectRequestInfo))
@@ -660,7 +660,7 @@ bool DSI::CCommEngine::Private::handleMessage(const DSI::MessageHeader& hdr, std
                else
                {
                   // send back an invalid message as error message
-                  static_assert(sizeof(DSI::ConnectRequestInfo) == sizeof(DSI::TCPConnectRequestInfo));
+                  static_assert(sizeof(DSI::ConnectRequestInfo) == sizeof(DSI::TCPConnectRequestInfo), "");
 
                   if (dynamic_cast<CTCPChannel*>(chnl.get()) != nullptr)
                   {                     
@@ -954,7 +954,7 @@ bool DSI::CCommEngine::remove( CClient &client )
    if (this == client.mCommEngine)
    {
       d->remove(client);
-      client.mCommEngine = 0 ;
+      client.mCommEngine = nullptr ;
 
       return true ;
    }
@@ -1139,13 +1139,13 @@ public:
    inline
    bool operator()(DSI::GenericEventBase::Result result)
    {
-      static_assert((int)DSI::CCommEngine::DataAvailable == (int)DSI::GenericEventBase::DataAvailable);
+      static_assert((int)DSI::CCommEngine::DataAvailable == (int)DSI::GenericEventBase::DataAvailable, "");
 
-      static_assert((int)DSI::CCommEngine::CanWriteNow == (int)DSI::GenericEventBase::CanWriteNow);
-      static_assert((int)DSI::CCommEngine::DeviceHungup == (int)DSI::GenericEventBase::DeviceHungup);
+      static_assert((int)DSI::CCommEngine::CanWriteNow == (int)DSI::GenericEventBase::CanWriteNow, "");
+      static_assert((int)DSI::CCommEngine::DeviceHungup == (int)DSI::GenericEventBase::DeviceHungup, "");
 
-      static_assert((int)DSI::CCommEngine::InvalidFileDescriptor == (int)DSI::GenericEventBase::InvalidFileDescriptor);
-      static_assert((int)DSI::CCommEngine::GenericError == (int)DSI::GenericEventBase::GenericError);
+      static_assert((int)DSI::CCommEngine::InvalidFileDescriptor == (int)DSI::GenericEventBase::InvalidFileDescriptor, "");
+      static_assert((int)DSI::CCommEngine::GenericError == (int)DSI::GenericEventBase::GenericError, "");
 
       return mFunc(static_cast<DSI::CCommEngine::IOResult>(result));
    }

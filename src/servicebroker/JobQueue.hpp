@@ -82,7 +82,8 @@ public:
 
 private:
 
-   Job(int cookie, SocketMessageContext* ctx, dcmd_t dcmd, size_t sbytes, size_t rbytes);
+   Job(int cookie, SocketMessageContext* ctx, dcmd_t dcmd, size_t sbytes, size_t rbytes){}
+
 };
 
 

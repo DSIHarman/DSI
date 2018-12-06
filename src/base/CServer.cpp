@@ -95,7 +95,7 @@ DSI::CServer::CServer( const char* ifname, const char* rolename, int majorVersio
    : CBase( ifname, rolename, majorVersion, minorVersion )
    , mSessionId( DSI::INVALID_SESSION_ID )
    , mResponseId( DSI::INVALID_ID )
-   , d(0)
+   , d(nullptr)
    , mTCPIPEnabled( enableTCPIP || isTCPForced() )
 {
    TRC_SCOPE( dsi_base, CServer, global );
@@ -419,7 +419,7 @@ void DSI::CServer::handleDataRequest( Private::CDataRequestHandle &handle )
 
 DSI::CServer::SessionData* DSI::CServer::findSession(int32_t seqNr, const SPartyID &clientID)
 {
-   SessionData* session = 0;
+   SessionData* session = nullptr;
 
    if (seqNr != DSI::INVALID_SEQUENCE_NR)
    {
@@ -568,7 +568,7 @@ void DSI::CServer::sendResponse(uint32_t responseId, uint32_t id, DSI::ResultTyp
 
 DSI::CServer::ClientConnection* DSI::CServer::findClientConnection(const SPartyID& clientID)
 {
-   ClientConnection* rc = 0;
+   ClientConnection* rc = nullptr;
 
    clientconnectionlist_type::iterator iter = mClientConnections.find(ClientConnection(clientID));
    if (iter != mClientConnections.end())

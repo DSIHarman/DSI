@@ -32,7 +32,7 @@ public:
    inline
    operator const void*() const
    {
-      return mFd >= 0 ? this : 0;
+      return mFd >= 0 ? this : nullptr;
    }
 
 private:

@@ -14,6 +14,7 @@
 #include <tr1/tuple>
 
 #include <sys/timerfd.h>
+#include <unistd.h>
 
 #include "dsi/CCommEngine.hpp"
 

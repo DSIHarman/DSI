@@ -123,7 +123,7 @@ bool DSI::CRequestReader::receiveAll()
                            CInputTraceSession session(iface, requestId);
                            if (session.isPayloadEnabled()) 
                            {                                       
-                              session.write(mCurrent, 0, mBuf.pptr(), mHdr.packetLength);                     
+                              session.write(mCurrent, nullptr, mBuf.pptr(), mHdr.packetLength);
                            }
                         }
                         

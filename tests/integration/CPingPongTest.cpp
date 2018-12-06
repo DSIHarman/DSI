@@ -212,7 +212,7 @@ void CPingPongTest<ServerInSeparateThread>::testPingPongImpl(Mode mode, bool /*t
    if (ServerInSeparateThread)
    {      
       tThreadArgsType args(&serverEngine, mode);      
-      CPPUNIT_ASSERT(::pthread_create(&tid, 0, &serverRunner, &args) == 0);
+      CPPUNIT_ASSERT(::pthread_create(&tid, nullptr, &serverRunner, &args) == 0);
    }
    else
    {

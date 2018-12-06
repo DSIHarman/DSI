@@ -66,7 +66,7 @@ namespace DSI
 
       inline
       Device()
-         : dispatcher_(0)
+         : dispatcher_(nullptr)
          , fd_(TraitsT::Invalid)
       {
          // NOOP
@@ -126,7 +126,7 @@ namespace DSI
 
       inline
       Device(fd_type fd)
-         : dispatcher_(0)
+         : dispatcher_(nullptr)
          , fd_(fd)
       {
          // NOOP
@@ -336,7 +336,7 @@ namespace DSI
       inline
       operator const void*() const
       {
-         return is_open() ? this : 0;
+         return is_open() ? this : nullptr;
       }
 
 

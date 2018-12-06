@@ -56,7 +56,7 @@ namespace /*anonymous*/
          {
             ips[i++] = ntohl(tmpAddr.s_addr);
          }
-         token = strtok(NULL, ",");
+         token = strtok(nullptr, ",");
       }
       delete []tmpIps;
       return i;
@@ -285,7 +285,7 @@ const char* HTTPClient::parseRequestLine()
       return uri;
    }
 
-   return 0;
+   return nullptr;
 }
 
 
@@ -321,7 +321,7 @@ int HTTPClient::parseContentLength()
 
 HTTPClient::HTTPClient(const IPv4::StreamSocket& sock)
    : mSock(sock)
-   , body_begin_(0)
+   , body_begin_(nullptr)
    , total_(0)
 {
    ::memset(buf_, 0, sizeof(buf_));
@@ -381,7 +381,7 @@ void HTTPClient::eval()
 
    if (buf_[0] == 'P'/*OST*/)
    {
-      if (body_begin_ != 0 && total_ < static_cast<int32_t>(sizeof(buf_)))   // avoid any request overflows...
+      if (body_begin_ != nullptr && total_ < static_cast<int32_t>(sizeof(buf_)))   // avoid any request overflows...
       {
          // skip whitespace if any
          while(::isspace(*body_begin_))
@@ -389,13 +389,13 @@ void HTTPClient::eval()
 
          // parse name/value pairs
          char* token = strtok(body_begin_, "&");
-         while(token != 0)
+         while(token != nullptr)
          {
             // parse name=value pair
             setup(token);
 
             // next token
-            token = strtok(0, "&");
+            token = strtok(nullptr, "&");
          }
 
          body << "OK";
@@ -550,13 +550,13 @@ struct PointerComparePredicate
 ServicebrokerServer::ServicebrokerServer()
    : HTTPMixin(mService)
    , NotificationMixin(mService)
-   , mMaster(0)
+   , mMaster(nullptr)
    , mUnixAcceptor(mService)
    , mNextUnix(mService)
    , mPipeDevice(mService)
    , mFlags(0)
    , mStopped(false)
-   , mBindIPs(0)
+   , mBindIPs(nullptr)
    , mBindFeatureActive(false)
 {
    // NOOP
@@ -566,7 +566,7 @@ ServicebrokerServer::ServicebrokerServer()
 ServicebrokerServer::~ServicebrokerServer()
 {
    stop();
-   mMaster = 0;
+   mMaster = nullptr;
    mServerSockets.clear_and_dispose(TCPMixin::dispose);
 
    HTTPMixin::close();
@@ -679,7 +679,7 @@ TCPMixin* ServicebrokerServer::getServerSocket(IPv4::Endpoint& address)
       return &mServerSockets.front();
    }
 
-   return 0;
+   return nullptr;
 }
 
 
@@ -796,7 +796,7 @@ int ServicebrokerServer::run()
    bool bindStatus[MAX_IPS_TO_BIND];
    unsigned short ipsToBind(0);
    unsigned short i(0);
-   TCPMixin *serverSocket(0);
+   TCPMixin *serverSocket(nullptr);
    intrusive::Slist<TCPMixin>::iterator it;
 
    memset(bindStatus, false, sizeof(bindStatus));

@@ -282,8 +282,8 @@ namespace DSI
    TVariant<TypelistT>::TVariant(const T& t)
       : mIdx(typeIdOf<T>::value)
    {
-      static_assert((Private::TypeListAlgos::Size<tTypelistType>::value > 1));//, a_variant_must_contain_at_least_two_elements);
-      static_assert((Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0));//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
+      static_assert(Private::TypeListAlgos::Size<tTypelistType>::value > 1, "");//, a_variant_must_contain_at_least_two_elements);
+      static_assert(Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0, "");//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
 
       ::new(&mData) T(t);
    }
@@ -294,7 +294,7 @@ namespace DSI
    TVariant<TypelistT>&
    TVariant<TypelistT>::operator=(const T& t)
    {
-      static_assert((Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0)); // given_type_is_not_element_of_variant_maybe_use_explicit_cast
+      static_assert(Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0, ""); // given_type_is_not_element_of_variant_maybe_use_explicit_cast
 
       if (mIdx == typeIdOf<T>::value)
       {
@@ -340,8 +340,8 @@ namespace DSI
    {
       try_destroy();
 
-      static_assert((Private::TypeListAlgos::Size<tTypelistType>::value > 1));//, a_variant_must_contain_at_least_two_elements);
-      static_assert((Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0));//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
+      static_assert(Private::TypeListAlgos::Size<tTypelistType>::value > 1, "");//, a_variant_must_contain_at_least_two_elements);
+      static_assert(Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0, "");//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
 
       mIdx = typeIdOf<T>::value;
       args.template apply<T>(&mData);
@@ -355,8 +355,8 @@ namespace DSI
    {
       try_destroy();
 
-      static_assert((Private::TypeListAlgos::Size<tTypelistType>::value > 1));//, a_variant_must_contain_at_least_two_elements);
-      static_assert((Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0));//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
+      static_assert(Private::TypeListAlgos::Size<tTypelistType>::value > 1, "");//, a_variant_must_contain_at_least_two_elements);
+      static_assert(Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0, "");//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
 
       mIdx = typeIdOf<T>::value;
       ::new(&mData) T();
@@ -368,10 +368,10 @@ namespace DSI
    inline
    T* TVariant<TypelistT>::get()
    {
-      static_assert((Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0));//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
+      static_assert(Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0, "");//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
 
       if (typeIdOf<T>::value != mIdx)
-         return 0;
+         return nullptr;
 
       return (T*)&mData;
    }
@@ -382,10 +382,10 @@ namespace DSI
    inline
    const T* TVariant<TypelistT>::get() const
    {
-      static_assert((Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0));//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
+      static_assert(Private::TypeListAlgos::Find<T, tTypelistType>::value >= 0, "");//, given_type_is_not_element_of_variant_maybe_use_explicit_cast);
 
       if (typeIdOf<T>::value != mIdx)
-         return 0;
+         return nullptr;
 
       return (const T*)(&mData);
    }

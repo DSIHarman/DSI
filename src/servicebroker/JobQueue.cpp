@@ -16,36 +16,29 @@
 
 using namespace DSI;
 
-Job::Job(int theCookie, SocketMessageContext* theCtx, dcmd_t theDcmd, size_t theSbytes, size_t theRbytes)
- : cookie(theCookie)
- , ctx()
- , dcmd(theDcmd)
- , status(0)
- , ret_val(0)
- , sbytes(theSbytes)
- , rbytes(theRbytes)
- , next(0)
- , arg(0)
-{
-   if( rbytes > 0 || sbytes > 0 )
-      arg = this+1 ;
 
-   if (theCtx)
-      ctx = *theCtx;
-}
 
 
 /*static*/
-Job* Job::create( SocketMessageContext& msg, int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
+Job* Job::create(SocketMessageContext& msg, int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
 {
    Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t>(__max(theSbytes, theRbytes)) );
    if( job )
    {
+   /// CMakeFiles/servicebroker.dir/JobQueue.cpp.o:
+   /// In function `Job::create(SocketMessageContext&, int, int, void*, unsigned long, unsigned long)':
+   /// /opt/DSI/src/servicebroker/JobQueue.cpp:29: undefined reference to
+   /// `Job::Job(int, SocketMessageContext*, int, unsigned long, unsigned long)'
+   /// int cookie, SocketMessageContext* ctx, dcmd_t dcmd, size_t sbytes, size_t rbytes
+      Job* tmp = new Job(theCookie, &msg, theDcmd, theSbytes, theSbytes);
       new(job) Job(theCookie, &msg, theDcmd, theSbytes, theRbytes);
       memset( job+1, 0, __max(theSbytes, theRbytes) );
 
       if( theSbytes > 0 )
-         memcpy( job->arg, parg, theSbytes );
+      {
+          memcpy( job->arg, parg, theSbytes );
+      }
+
    }
 
    return job ;
@@ -55,14 +48,17 @@ Job* Job::create( SocketMessageContext& msg, int theCookie, dcmd_t theDcmd, void
 /*static*/
 Job* Job::create( int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
 {
-   Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t>(__max(theSbytes, theRbytes)) );
+   Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t> (__max(theSbytes, theRbytes)) );
    if( job )
    {
-      new(job) Job(theCookie, 0, theDcmd, theSbytes, theRbytes);
+       /// JobQueue.cpp: undefined reference to `Job::Job(int, SocketMessageContext*, int, unsigned long, unsigned long)'
+      new(job) Job(theCookie, nullptr, theDcmd, theSbytes, theRbytes);
       memset( job+1, 0, __max(theSbytes, theRbytes) );
 
       if( theSbytes > 0 )
-         memcpy( job->arg, parg, theSbytes );
+      {
+          memcpy( job->arg, parg, theSbytes );
+      }
    }
 
    return job ;
@@ -97,12 +93,13 @@ const SocketConnectionContext& Job::getConnectionContext()
 }
 
 
+
 // ------------------------------------------------------------------------------
 
 
 JobQueue::JobQueue()
- : mFront(0)
- , mBack(0)
+ : mFront(nullptr)
+ , mBack(nullptr)
  , mSize(0)
  , mTotalCounter(0)
 {
@@ -124,12 +121,14 @@ void JobQueue::push(Job* job)
    assert(!job->next);
 
    // queue empty?
-   if (mBack == 0)
+   if (mBack == nullptr)
    {
       mFront = job;
    }
    else
-      mBack->next = job;
+   {
+       mBack->next = job;
+   }
 
    mBack = job;
 
@@ -140,7 +139,7 @@ void JobQueue::push(Job* job)
 
 Job* JobQueue::pop()
 {
-   Job* job = 0;
+   Job* job = nullptr;
 
    LockGuard<RecursiveMutex> lock( mQueueLock );
 
@@ -148,11 +147,13 @@ Job* JobQueue::pop()
    {
       job = mFront;
       mFront = job->next;
-      job->next = 0;
+      job->next = nullptr;
 
       // queue now empty?
       if (!mFront)
-         mBack = 0;
+      {
+          mBack = nullptr;
+      }
 
       --mSize;
    }

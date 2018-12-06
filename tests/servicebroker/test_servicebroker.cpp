@@ -51,14 +51,14 @@ struct _pulse
 };
 
 
-int createReceiverChannel()
+uint64_t createReceiverChannel()
 {
    TestSocket* ts = new TestSocket();
    char buf[128];
-   (void)ts->accpt.bind(make_unix_path(buf, sizeof(buf), getpid(), (int)ts));
+   (void)ts->accpt.bind(make_unix_path(buf, sizeof(buf), getpid(), (uint64_t)ts));
    (void)ts->accpt.listen();
 
-   return (int)ts;
+   return (uint64_t)ts;
 }
 
 
@@ -190,7 +190,7 @@ void ServiceBrokerTest::testRun()
    fd = SBOpen("/master");
    CPPUNIT_ASSERT(fd > 0);
 
-   int chid = createReceiverChannel();
+   int64_t chid = createReceiverChannel();
    CPPUNIT_ASSERT( chid > 0 );
 
    // we set a notification first
@@ -368,7 +368,7 @@ void ServiceBrokerTest::testGlobalIdTest()
    int fd_master = SBOpen("/master");
    CPPUNIT_ASSERT(fd_master > 0);
 
-   int chid = createReceiverChannel();
+   int64_t chid = createReceiverChannel();
    CPPUNIT_ASSERT( chid > 0 );
 
 
@@ -640,7 +640,7 @@ void ServiceBrokerTest::floodTest()
    int fd_master = SBOpen("/master");
    CPPUNIT_ASSERT(fd_master > 0);
 
-   int chid = createReceiverChannel();
+   int64_t chid = createReceiverChannel();
    CPPUNIT_ASSERT( chid > 0 );
 
    for( unsigned int idx=0; idx<sizeof(interfaces_slave)/sizeof(interfaces_slave[0]); idx++ )
@@ -836,7 +836,7 @@ void ServiceBrokerTest::testTcpServices()
    int fd = SBOpen("/master");
    CPPUNIT_ASSERT(fd > 0);
 
-   int chid = createReceiverChannel();
+   int64_t chid = createReceiverChannel();
    CPPUNIT_ASSERT( chid > 0 );
 
    unsigned int notificationID = 0 ;
@@ -881,7 +881,7 @@ void ServiceBrokerTest::testTcpMultiServices()
    int fd = SBOpen("/master");
    CPPUNIT_ASSERT(fd > 0);
 
-   int chid = createReceiverChannel();
+   int64_t chid = createReceiverChannel();
    CPPUNIT_ASSERT( chid > 0 );
 
    unsigned int notificationID = 0 ;
@@ -944,7 +944,7 @@ void ServiceBrokerTest::testMasterSlaveInteraction()
    int fd_master = SBOpen("/master");
    CPPUNIT_ASSERT(fd_master > 0);
 
-   int chid = createReceiverChannel();
+   int64_t chid = createReceiverChannel();
    CPPUNIT_ASSERT( chid > 0 );
 
    ret = SBSetServerAvailableNotification( fd_slave, "HalloWelt.hallowelt", 1, 2, chid, INTERFACE_AVAILABLE, 42, &notificationID );
@@ -1113,7 +1113,7 @@ void ServiceBrokerTest::testDisconnectRace()
          CPPUNIT_ASSERT(fd_client > 0);
 
          // open notification channel
-         int chid = createReceiverChannel();
+         int64_t chid = createReceiverChannel();
          CPPUNIT_ASSERT( chid > 0 );
 
          // server register Interface

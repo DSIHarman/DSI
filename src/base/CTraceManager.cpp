@@ -23,7 +23,7 @@ struct DSI::CTraceManager::Private
 
 
 /*static*/
-DSI::CTraceManager::Private* DSI::CTraceManager::d = 0;
+DSI::CTraceManager::Private* DSI::CTraceManager::d = nullptr;
 
 
 // ---------------------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ DSI::CTraceManager::Private* DSI::CTraceManager::d = 0;
 /*static*/
 void DSI::CTraceManager::init(DSI::Trace::IChannel& channel)
 {
-   assert(d == 0);
+   assert(d == nullptr);
    
    d = new DSI::CTraceManager::Private;
    d->mChannel = &channel;   

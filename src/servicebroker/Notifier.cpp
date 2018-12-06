@@ -56,7 +56,7 @@ void Notifier::masterDisconnected()
 }
 
 
-void Notifier::deliverPulse(int code, int value)
+void Notifier::deliverPulse(uint64_t code, uint64_t value)
 {
    InternalNotification n = { code, value };
    while(::write(fd_, &n, sizeof(n)) < 0 && errno == EINTR);

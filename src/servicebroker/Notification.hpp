@@ -132,7 +132,7 @@ private:
 inline 
 bool Notification::hasRegExp()
 {
-   return 0 != regExpr ;
+   return regExpr != nullptr;
 }
 
 
