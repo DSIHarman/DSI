@@ -72,7 +72,7 @@ namespace DSI
       inline
       void removeAll(int fd)
       {
-         ((InheriterT*)this)->doRemoveAll(fd);
+         static_cast<InheriterT*>(this)->doRemoveAll(fd);
       }
 
       // FIXME allow read and write simultaneously on same fdset entry, but no multiple reads/writes
@@ -90,7 +90,7 @@ namespace DSI
       inline
       void enqueueEvent(int fd, EventBase* e, short direction)
       {
-         ((InheriterT*)this)->doEnqueueEvent(fd, e, direction);
+         static_cast<InheriterT*>(this)->doEnqueueEvent(fd, e, direction);
       }
 
 

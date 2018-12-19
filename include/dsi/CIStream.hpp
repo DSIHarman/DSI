@@ -144,7 +144,7 @@ namespace DSI
          // checking if there is enough data in the stream
          if((mOffset+sizeof(T)) <= mSize )
          {
-            value = *(T*)(mData+mOffset) ;
+            value = *const_cast<T*>(reinterpret_cast<const T*>(mData+mOffset));
             mOffset += sizeof(T) ;
          }
          else
@@ -224,15 +224,15 @@ MAKE_DSI_DESERIALIZING_OPERATOR(float)
 MAKE_DSI_DESERIALIZING_OPERATOR(bool)
 
 
-template<typename T>      
-inline                                       
-DSI::CIStream& operator>>(DSI::CIStream& str, T& t) 
-{     
-   DSI_STATIC_ASSERT(std::tr1::is_enum<T>::value);
+template<typename T>
+inline
+DSI::CIStream& operator>>(DSI::CIStream& str, T& t)
+{
+   static_assert(std::tr1::is_enum<T>::value, "");
    
-   str.read((uint32_t&)t);         
-   return str;   
-} 
+   str.read((uint32_t&)t);
+   return str;
+}
 
 
 #define DSI_VARIANT_DESERIALIZATIONVISITOR(baseclass)         \

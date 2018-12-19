@@ -13,14 +13,14 @@
 
 DSI::COStream& DSI::COStream::write(const std::wstring& str)
 {   
-   if (0 != str.size())
-   {      
-      std::string temp = toUTF8(str);
-      write((uint32_t)temp.size()+1);   // include trailing 0 byte
-      (void)write(temp.c_str(), temp.size()+1);
-   }
-   else
-      write((uint32_t)0);
-      
-   return *this;
+  if (0 != str.size())
+  {      
+    std::string temp = toUTF8(str);
+    write(static_cast<uint32_t>(temp.size()+1));   // include trailing 0 byte
+    (void)write(temp.c_str(), temp.size()+1);
+  }
+  else
+    write(static_cast<uint32_t>(0));
+
+  return *this;
 }

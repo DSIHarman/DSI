@@ -32,7 +32,7 @@ namespace DSI
     * CChannel is the end-point of a connnection over which the DSI data protocol messages are
     * flowing. The channel offers the logical connection between a DSI client and a DSI server. 
     * This class does not manage the OS native resource. The implementor within CCommEngine 
-    * is responsible for closing the channels if they are no more needed.       
+    * is responsible for closing the channels if they are no more needed.
     */
    class CChannel : public Private::CNonCopyable
    {
@@ -56,7 +56,7 @@ namespace DSI
       inline
       operator const void*() const
       {
-         return isOpen() ? this : 0;
+         return isOpen() ? this : nullptr;
       }
 
       /**

@@ -16,84 +16,83 @@
 
 using namespace DSI;
 
-Job::Job(int theCookie, SocketMessageContext* theCtx, dcmd_t theDcmd, size_t theSbytes, size_t theRbytes)
- : cookie(theCookie)
- , ctx()
- , dcmd(theDcmd)
- , status(0)
- , ret_val(0)
- , sbytes(theSbytes)
- , rbytes(theRbytes)
- , next(0)
- , arg(0)
-{
-   if( rbytes > 0 || sbytes > 0 )
-      arg = this+1 ;
 
-   if (theCtx)
-      ctx = *theCtx;
+Job::Job(int cookie, SocketMessageContext *ctx, dcmd_t dcmd, size_t sbytes, size_t rbytes)
+{
+    /// TODO: the body was missing.
 }
 
-
 /*static*/
-Job* Job::create( SocketMessageContext& msg, int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
+Job* Job::create(SocketMessageContext& msg, int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
 {
-   Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t>(__max(theSbytes, theRbytes)) );
-   if( job )
-   {
-      new(job) Job(theCookie, &msg, theDcmd, theSbytes, theRbytes);
-      memset( job+1, 0, __max(theSbytes, theRbytes) );
+  Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t>(__max(theSbytes, theRbytes)) );
+  if( job )
+  {
+  /// CMakeFiles/servicebroker.dir/JobQueue.cpp.o:
+  /// In function `Job::create(SocketMessageContext&, int, int, void*, unsigned long, unsigned long)':
+  /// /opt/DSI/src/servicebroker/JobQueue.cpp:29: undefined reference to
+  /// `Job::Job(int, SocketMessageContext*, int, unsigned long, unsigned long)'
+  /// int cookie, SocketMessageContext* ctx, dcmd_t dcmd, size_t sbytes, size_t rbytes
+    Job* tmp = new Job(theCookie, &msg, theDcmd, theSbytes, theSbytes);
+    new(job) Job(theCookie, &msg, theDcmd, theSbytes, theRbytes);
+    memset( job+1, 0, __max(theSbytes, theRbytes) );
 
-      if( theSbytes > 0 )
-         memcpy( job->arg, parg, theSbytes );
-   }
+    if( theSbytes > 0 )
+    {
+       memcpy( job->arg, parg, theSbytes );
+    }
 
-   return job ;
+  }
+
+  return job ;
 }
 
 
 /*static*/
 Job* Job::create( int theCookie, dcmd_t theDcmd, void* parg, size_t theSbytes, size_t theRbytes)
 {
-   Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t>(__max(theSbytes, theRbytes)) );
-   if( job )
-   {
-      new(job) Job(theCookie, 0, theDcmd, theSbytes, theRbytes);
-      memset( job+1, 0, __max(theSbytes, theRbytes) );
+  Job* job = (Job*) ::malloc( sizeof(Job) + static_cast<size_t> (__max(theSbytes, theRbytes)) );
+  if( job )
+  {
+     /// JobQueue.cpp: undefined reference to `Job::Job(int, SocketMessageContext*, int, unsigned long, unsigned long)'
+    new(job) Job(theCookie, nullptr, theDcmd, theSbytes, theRbytes);
+    memset( job+1, 0, __max(theSbytes, theRbytes) );
 
-      if( theSbytes > 0 )
-         memcpy( job->arg, parg, theSbytes );
-   }
+    if( theSbytes > 0 )
+    {
+       memcpy( job->arg, parg, theSbytes );
+    }
+  }
 
-   return job ;
+  return job ;
 }
 
 
 void Job::free()
 {
-   this->~Job();
-   ::free( this );
+  this->~Job();
+  ::free( this );
 }
 
 
 void Job::finalize()
 {
-   if (ctx)
-      ctx.finalize(*this);
+  if (ctx)
+    ctx.finalize(*this);
 }
 
 
 ClientSpecificData& Job::getClientSpecificData()
 {
-   assert(ctx);
-   return ctx.context().getData();
+  assert(ctx);
+  return ctx.context().getData();
 }
 
 
 const SocketConnectionContext& Job::getConnectionContext()
 {
-   assert(ctx);
-   return ctx.context();
+  assert(ctx);
+  return ctx.context();
 }
 
 
@@ -101,62 +100,66 @@ const SocketConnectionContext& Job::getConnectionContext()
 
 
 JobQueue::JobQueue()
- : mFront(0)
- , mBack(0)
+    : mFront(nullptr)
+    , mBack(nullptr)
  , mSize(0)
  , mTotalCounter(0)
 {
-   // NOOP
+  // NOOP
 }
 
 
 JobQueue::~JobQueue()
 {
-   // NOOP
+  // NOOP
 }
 
 
 void JobQueue::push(Job* job)
 {
-   LockGuard<RecursiveMutex> lock( mQueueLock );
+  LockGuard<RecursiveMutex> lock( mQueueLock );
 
-   assert(job);
-   assert(!job->next);
+  assert(job);
+  assert(!job->next);
 
-   // queue empty?
-   if (mBack == 0)
-   {
-      mFront = job;
-   }
-   else
-      mBack->next = job;
+  // queue empty?
+  if (mBack == nullptr)
+  {
+    mFront = job;
+  }
+  else
+  {
+     mBack->next = job;
+  }
 
-   mBack = job;
+  mBack = job;
 
-   ++mSize;
-   ++mTotalCounter;
+  ++mSize;
+  ++mTotalCounter;
 }
 
 
 Job* JobQueue::pop()
 {
-   Job* job = 0;
+  Job* job = nullptr;
 
-   LockGuard<RecursiveMutex> lock( mQueueLock );
+  LockGuard<RecursiveMutex> lock( mQueueLock );
 
-   if (mFront)
-   {
-      job = mFront;
-      mFront = job->next;
-      job->next = 0;
+  if (mFront)
+  {
+    job = mFront;
+    mFront = job->next;
+    job->next = nullptr;
 
-      // queue now empty?
-      if (!mFront)
-         mBack = 0;
+    // queue now empty?
+    if (!mFront)
+    {
+       mBack = nullptr;
+    }
 
-      --mSize;
-   }
+    --mSize;
+  }
 
-   return job;
+  return job;
 }
 

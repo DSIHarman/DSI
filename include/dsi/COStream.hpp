@@ -90,7 +90,7 @@ namespace DSI
          mWriter.pbump((-mWriter.size()/*=current offset*/) & (sizeof(T)/*=alignment*/ - 1));
 
          // copy data to the buffer
-         *(T*)(mWriter.pptr()) = value ;
+         *(T*)(mWriter.pptr()) = value;
 
          // increase buffer size
          mWriter.pbump(sizeof(T));
@@ -123,7 +123,7 @@ namespace DSI
    inline
    COStream& COStream::write(const std::string& buf)
    {
-      write((uint32_t)buf.size());
+      write(static_cast<uint32_t>(buf.size()) );
 
       if (0 != buf.size())
          (void)write(buf.data(), buf.size());
@@ -156,11 +156,11 @@ DSI::COStream& operator<<(DSI::COStream& str, const std::wstring& s)
 }
 
 
-#define MAKE_DSI_SERIALIZING_OPERATOR(type)     \
-   inline                                       \
+#define MAKE_DSI_SERIALIZING_OPERATOR(type)              \
+   inline                                                \
    DSI::COStream& operator<<(DSI::COStream& str, type t) \
-   {                                            \
-      return str.write(t);                             \
+   {                                                     \
+      return str.write(t);                               \
    }
 
 MAKE_DSI_SERIALIZING_OPERATOR(int8_t)
@@ -179,14 +179,14 @@ MAKE_DSI_SERIALIZING_OPERATOR(float)
 MAKE_DSI_SERIALIZING_OPERATOR(bool)           
       
       
-template<typename T>      
-inline                                       
-DSI::COStream& operator<<(DSI::COStream& str, const T& t) 
-{     
-   DSI_STATIC_ASSERT(std::tr1::is_enum<T>::value);
+template<typename T>
+inline
+DSI::COStream& operator<<(DSI::COStream& str, const T& t)
+{
+   static_assert(std::tr1::is_enum<T>::value, "");
    
-   return str.write((uint32_t)t);                                
-}      
+   return str.write((uint32_t&)t);
+}
 
 
 #define DSI_VARIANT_SERIALIZATIONVISITOR(baseclass)            \

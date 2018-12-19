@@ -121,7 +121,7 @@ void SBClose( int handle )
 
 
 int SBRegisterInterface( int handle, const char* ifName, int majorVersion, int minorVersion,
-                         int chid, SPartyID *serverId )
+                         int64_t chid, SPartyID *serverId )
 {
    int rc = -1 ;
    errno = EINVAL ;
@@ -166,7 +166,7 @@ int SBRegisterInterfaceTCP( int handle, const char* ifName, int majorVersion, in
 
 
 int SBRegisterGroupInterface( int handle, const char* ifName, int majorVersion, int minorVersion
-                            , int chid, const char* groupName, SPartyID *serverId )
+                            , int64_t chid, const char* groupName, SPartyID *serverId )
 {
    int rc = -1 ;
    errno = EINVAL ;
@@ -201,7 +201,7 @@ int SBRegisterGroupInterface( int handle, const char* ifName, int majorVersion, 
 
 
 int SBRegisterInterfaceEx( int handle, const struct SFNDInterfaceDescription* ifDescr,
-                           int descrCount, int chid, SPartyID *serverId )
+                           int descrCount, int64_t chid, SPartyID *serverId )
 {
    int rc = -1 ;
    errno = EINVAL ;
@@ -314,7 +314,7 @@ int SBAttachInterface( int handle, const char* ifName, int majorVersion, int min
 int SBAttachInterfaceExtended( int handle, const char* ifName,
                                int majorVersion, int minorVersion,
                                struct SConnectionInfo *connInfo,
-                               int chid, int code, int value,
+                               int64_t chid, int code, int value,
                                notificationid_t* notificationID )
 {
    int rc = -1 ;
@@ -397,7 +397,7 @@ int SBDetachInterface( int handle, SPartyID clientId )
 
 
 int SBSetClientDetachNotification( int handle, SPartyID clientID
-                                 , int chid, int code, int value, notificationid_t* notificationID )
+                                 , int64_t chid, int code, int value, notificationid_t* notificationID )
 {
    int rc = -1 ;
    errno = EINVAL ;
@@ -422,7 +422,7 @@ int SBSetClientDetachNotification( int handle, SPartyID clientID
 
 int SBSetServerAvailableNotification( int handle,
                                       const char* ifName, int majorVersion, int minorVersion,
-                                      int chid, int code, int value,
+                                      int64_t chid, int code, int value,
                                       notificationid_t* notificationID )
 {
    int rc = -1 ;
@@ -446,7 +446,7 @@ int SBSetServerAvailableNotification( int handle,
 }
 
 
-int SBSetServerDisconnectNotification( int handle, SPartyID serverID, int chid, int code, int value,
+int SBSetServerDisconnectNotification( int handle, SPartyID serverID, int64_t chid, int code, int value,
                                        notificationid_t* notificationID )
 {
    int rc = -1 ;
@@ -512,7 +512,7 @@ int SBGetInterfaceList( int handle, struct SFNDInterfaceDescription *ifs, int in
 
 
 int SBSetInterfaceListChangeNotification( int handle,
-                                          int chid, int code, int value,
+                                          int64_t chid, int code, int value,
                                           notificationid_t* notificationID )
 {
    int rc = -1 ;
@@ -568,7 +568,7 @@ int SBMatchInterfaceList( int handle, const char* regExpr, struct SFNDInterfaceD
 
 
 int SBSetInterfaceMatchChangeNotification( int handle, const char* regExpr,
-                                           int chid, int code, int value,
+                                           int64_t chid, int code, int value,
                                            notificationid_t* notificationID )
 {
    int rc = -1 ;

@@ -162,7 +162,7 @@ struct CredentialsEvent : public DSI::EventBase
    // FIXME check for events POLLHUP before POLLIN since both are marked
    bool eval(fd_type fd, short revents)
    {
-      static struct ucred _credentials = { -1, SB_UNKNOWN_USER_ID, -1 };
+      static struct ucred _credentials = { -1, SB_UNKNOWN_USER_ID, SB_UNKNOWN_GROUP_ID };
       struct ucred* credentials = &_credentials;
 
       if (revents & POLLIN)

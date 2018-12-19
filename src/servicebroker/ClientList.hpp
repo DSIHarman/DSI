@@ -37,7 +37,7 @@ public:
    inline
    ClientListEntry( const SPartyID& clientId )
     : mClientId(clientId)
-    , mCtx(0)
+    , mCtx(nullptr)
    {
       mServerId.globalID = 0 ;
    }

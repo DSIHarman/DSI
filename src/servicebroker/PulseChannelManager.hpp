@@ -32,7 +32,7 @@ struct PulseChannel
    
    int nid;
    int pid;
-   int chid;
+   int64_t chid;
    
    int fd;
    int refCount;
@@ -61,7 +61,7 @@ public:
     *
     * @return a hopefully valid socket descriptor.
     */
-   int attach(int nid, int pid, int chid);
+   int attach(int nid, int pid, int64_t chid);
       
    /**
     * Detach from the given socket descriptor.

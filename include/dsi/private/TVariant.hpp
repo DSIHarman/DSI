@@ -60,7 +60,7 @@ namespace DSI
       template<typename T>
       void variant_destroy(void* t)
       { 
-         ((T*)t)->~T();
+         (static_cast<T*>(t))->~T();
       }
 
 
@@ -68,7 +68,7 @@ namespace DSI
       template<typename T>
       void variant_construct(void* to, const void* from)
       {   
-         ::new(to) T(*(const T*)from);
+         ::new(to) T(*static_cast<const T*>(from));
       }
 
 

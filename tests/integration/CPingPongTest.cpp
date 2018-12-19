@@ -206,13 +206,13 @@ void CPingPongTest<ServerInSeparateThread>::testPingPongImpl(Mode mode, bool /*t
    DSI::CCommEngine engine;
    DSI::CCommEngine serverEngine;
    
-   std::auto_ptr<CPingPongTestServer> server(0);
+   std::unique_ptr<CPingPongTestServer> server(nullptr);
    pthread_t tid;   
    
    if (ServerInSeparateThread)
    {      
       tThreadArgsType args(&serverEngine, mode);      
-      CPPUNIT_ASSERT(::pthread_create(&tid, 0, &serverRunner, &args) == 0);
+      CPPUNIT_ASSERT(::pthread_create(&tid, nullptr, &serverRunner, &args) == 0);
    }
    else
    {

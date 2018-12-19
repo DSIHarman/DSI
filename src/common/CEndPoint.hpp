@@ -145,7 +145,7 @@ namespace DSI
       InheriterT& operator=(const typename traits_type::addr_type& rhs)
       {
          address_ = rhs;
-         return *(InheriterT*)this;
+         return *static_cast<InheriterT*>(this);
       }
 
       inline

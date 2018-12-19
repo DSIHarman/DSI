@@ -15,7 +15,7 @@ MessageContext::MessageContext()
  , mGetOffset(-1)
  , mPutOffset(0)
 {
-   // NOOP
+  // NOOP
 }
 
 
@@ -24,18 +24,18 @@ MessageContext::MessageContext(const MessageContext& rhs)
  , mGetOffset(rhs.mGetOffset)
  , mPutOffset(rhs.mPutOffset)
 {
-   // NOOP
+  // NOOP
 }
 
 
 MessageContext& MessageContext::operator=(const MessageContext& rhs)
 {
-   if (&rhs != this)
-   {
-      mState = State_DEFERRED;
-      mGetOffset = rhs.mGetOffset;
-      mPutOffset = rhs.mPutOffset;
-   }
-   
-   return *this;
+  if (&rhs != this)
+  {
+    mState = State_DEFERRED;
+    mGetOffset = rhs.mGetOffset;
+    mPutOffset = rhs.mPutOffset;
+  }
+
+  return *this;
 }

@@ -56,7 +56,7 @@ public:
    bool isPayloadEnabled() const;      
    bool isActive() const;
    
-   void write(const DSI::MessageHeader* hdr, const DSI::EventInfo* info = 0, const void* payload = 0, size_t len = 0);
+   void write(const DSI::MessageHeader* hdr, const DSI::EventInfo* info = nullptr, const void* payload = nullptr, size_t len = 0);
    
 protected:
 

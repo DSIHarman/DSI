@@ -145,7 +145,7 @@ int main(int argc, char** argv)
          while(*ptr && *ptr == 'v')
             ++ptr;
 
-         printf("setting loglevel %d\n", ptr - argv[i] - 1);
+         printf("setting loglevel %ld\n", ptr - argv[i] - 1);
          Log::setLevel(ptr - argv[i] + 1);
       }
    }

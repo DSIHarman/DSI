@@ -34,7 +34,7 @@ namespace DSI
          RunnableT r = *(RunnableT*)arg_->runnable_;
          arg_->finished_ = 1;
          r();
-         return 0;
+         return nullptr;
       }
 
 
@@ -55,7 +55,7 @@ namespace DSI
       Thread(RunnableT runnable)
       {
          ArgumentHolder holder = { &runnable, 0 };
-         int rc = ::pthread_create(&mTid, 0, run_it<RunnableT>, &holder);
+         int rc = ::pthread_create(&mTid, nullptr, run_it<RunnableT>, &holder);
          assert(rc == 0);
          (void)rc;
          while(!holder.finished_);    // FIXME remove busy looping here?
@@ -73,7 +73,7 @@ namespace DSI
       inline
       operator const void*() const
       {
-         return mTid ? this : 0;
+         return mTid ? this : nullptr;
       }
 
 
@@ -100,7 +100,7 @@ namespace DSI
 
          if (mTid != 0)
          {
-            rc = (::pthread_join(mTid, 0) == 0);
+            rc = (::pthread_join(mTid, nullptr) == 0);
             mTid = 0;
          }
 

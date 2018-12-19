@@ -16,39 +16,39 @@
 /*static*/
 std::tr1::shared_ptr<DSI::CChannel> DSI::CDummyChannel::getInstancePtr()
 {
-   static std::tr1::shared_ptr<CChannel> chnl(new CDummyChannel);
-   return chnl;
+  static std::tr1::shared_ptr<CChannel> chnl(new CDummyChannel);
+  return chnl;
 }
 
 
 bool DSI::CDummyChannel::isOpen() const
 {
-   return false;
+  return false;
 }
 
 
 bool DSI::CDummyChannel::sendAll(const void* /*data*/, size_t /*len*/)
 {
-   assert(false);
-   return false;
+  assert(false);
+  return false;
 }
 
 
 bool DSI::CDummyChannel::sendAll(const iov_t* /*iov*/, size_t /*iov_len*/)
 {
-   assert(false);
-   return false;
+  assert(false);
+  return false;
 }
 
 
 bool DSI::CDummyChannel::recvAll(void* /*buf*/, size_t /*len*/)
 {
-   assert(false);
-   return false;
+  assert(false);
+  return false;
 }
 
 
 void DSI::CDummyChannel::asyncRead(CClientConnectSM* /*sm*/)
 {
-   assert(false);   
+  assert(false);   
 }

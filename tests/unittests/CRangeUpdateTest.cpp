@@ -55,7 +55,7 @@ void CRangeUpdateTest::testCompleteSetter()
    DSI::UpdateType up = DSI::UPDATE_COMPLETE;
    int16_t pos = 0;
    int16_t count = 0;
-   orig.set(updt, up, &pos, &count);
+   orig.set(updt, up, pos, count);
    
    CPPUNIT_ASSERT(orig.mValue == updt);
    
@@ -83,7 +83,7 @@ void CRangeUpdateTest::testInsertSetter()
    DSI::UpdateType up = DSI::UPDATE_INSERT;
    int16_t pos = 3;
    int16_t count = 1;
-   orig.set(updt, up, &pos, &count);
+   orig.set(updt, up, pos, count);
    
    std::vector<int> comp;
    comp.push_back(1);
@@ -120,7 +120,7 @@ void CRangeUpdateTest::testDeleteSetter()
    
    int16_t pos = 2;
    int16_t count = 3;
-   orig.set(updt, up, &pos, &count);
+   orig.set(updt, up, pos, count);
    
    std::vector<int> comp;
    comp.push_back(1);
@@ -151,7 +151,7 @@ void CRangeUpdateTest::testDeleteSetterRest()
    
    int16_t pos = 2;
    int16_t count = -1;
-   orig.set(updt, up, &pos, &count);
+   orig.set(updt, up, pos, count);
    
    std::vector<int> comp;
    comp.push_back(1);
@@ -182,7 +182,7 @@ void CRangeUpdateTest::testReplaceSetter()
    DSI::UpdateType up = DSI::UPDATE_REPLACE;
    int16_t pos = 3;
    int16_t count = -1;
-   orig.set(updt, up, &pos, &count);
+   orig.set(updt, up, pos, count);
    
    std::vector<int> comp;
    comp.push_back(1);

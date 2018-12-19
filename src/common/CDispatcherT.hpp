@@ -22,7 +22,7 @@ namespace DSI
 
       while(!finished_ && ret >= 0)
       {
-         ret = ((InheriterT*)this)->poll(1000);
+         ret = static_cast<InheriterT*>(this)->poll(1000);
       }
 
       if (!finished_ && ret < 0)

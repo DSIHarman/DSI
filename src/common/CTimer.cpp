@@ -12,18 +12,18 @@
 DSI::NativeTimer::NativeTimer(Dispatcher& dispatcher)
  : Device<NormalDescriptorTraits>(dispatcher)
 {
-   assert(&dispatcher);
-   fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
+  assert(&dispatcher);
+  fd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK|TFD_CLOEXEC);
 }
 
 
 DSI::NativeTimer::~NativeTimer()
 {
-   if (is_open())
-   {
-      this->dispatcher_->removeAll(*this);
-      while(::close(fd_) && errno == EINTR);
-   }
+  if (is_open())
+  {
+    this->dispatcher_->removeAll(*this);
+    while(::close(fd_) && errno == EINTR);
+  }
 }
 
 

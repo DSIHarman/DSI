@@ -214,7 +214,7 @@ namespace DSI
          if (revents & TraitsT::poll_mask)
          {
             // FIXME remove this curiously recurring template pattern - it's too curious
-            return ((ImplementorT*)this)->doEval(fd);
+            return static_cast<ImplementorT*>(this)->doEval(fd);
          }
          else
             return evalPollErrors(revents);
@@ -447,7 +447,7 @@ namespace DSI
          spec.it_value.tv_sec = timeout_ms_ / 1000;
          spec.it_value.tv_nsec = (timeout_ms_ % 1000) * 1000000;
 
-         return ::timerfd_settime(fd, 0, &spec, 0) == 0;
+         return ::timerfd_settime(fd, 0, &spec, nullptr) == 0;
       }
 
 

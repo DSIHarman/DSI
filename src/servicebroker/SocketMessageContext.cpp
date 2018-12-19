@@ -14,11 +14,11 @@
 
 SocketMessageContext::SocketMessageContext()
  : MessageContext()
- , mCtx(0)
- , mReadBuffer(0)
- , mWriteBuffer(0)
+ , mCtx(nullptr)
+ , mReadBuffer(nullptr)
+ , mWriteBuffer(nullptr)
 {
-   // NOOP
+  // NOOP
 }
 
 
@@ -27,114 +27,114 @@ SocketMessageContext::SocketMessageContext(SocketConnectionContext& ctxt, tAutoB
  , mReadBuffer(&readBuffer)
  , mWriteBuffer(&writeBuffer)
 {
-   // NOOP
+  // NOOP
 }
 
 
 SocketMessageContext::SocketMessageContext(const SocketMessageContext& rhs)
  : MessageContext(rhs)
  , mCtx(rhs.mCtx)  
- , mReadBuffer(0)
- , mWriteBuffer(0)
+ , mReadBuffer(nullptr)
+ , mWriteBuffer(nullptr)
 {
-   // NOOP
+  // NOOP
 }
 
 
 SocketMessageContext& SocketMessageContext::operator=(const SocketMessageContext& rhs)
 {
-   if (&rhs != this)
-   {
-      MessageContext::operator=(rhs);
-      mCtx = rhs.mCtx;
-      mReadBuffer = 0;
-      mWriteBuffer = 0;
-   }
-   
-   return *this;   
+  if (&rhs != this)
+  {
+    MessageContext::operator=(rhs);
+    mCtx = rhs.mCtx;
+    mReadBuffer = nullptr;
+    mWriteBuffer = nullptr;
+  }
+
+  return *this;   
 }   
 
 void SocketMessageContext::prepareResponse(int retval, bool force)
 {
-   assert(mWriteBuffer);
+  assert(mWriteBuffer);
 
-   if (!force)   
-      assert(mState == State_PROCESSING);
-   
-   mState = State_SENT;
+  if (!force)   
+    assert(mState == State_PROCESSING);
 
-   if (mPutOffset > 0 && retval <= static_cast<int>(FNDOK))    // negative value for GetInterfaceList and MatchInterfaceList
-   {      
-      mWriteBuffer->response().fr_envelope.fr_size = mPutOffset;
-   }   
-   else
-      mWriteBuffer->response().fr_envelope.fr_size = 0;      
-      
-   mWriteBuffer->response().fr_returncode = retval;
+  mState = State_SENT;
+
+  if (mPutOffset > 0 && retval <= static_cast<int>(FNDOK))    // negative value for GetInterfaceList and MatchInterfaceList
+  {      
+    mWriteBuffer->response().fr_envelope.fr_size = mPutOffset;
+  }   
+  else
+    mWriteBuffer->response().fr_envelope.fr_size = 0;      
+
+  mWriteBuffer->response().fr_returncode = retval;
 }
 
 
 void SocketMessageContext::prepareResponse(int retval, const void* data, size_t len)
 {
-   assert(mState == State_PROCESSING);
-   assert(mWriteBuffer);
-   
-   mState = State_SENT;
+  assert(mState == State_PROCESSING);
+  assert(mWriteBuffer);
 
-   if (mPutOffset > 0 && retval == static_cast<int>(FNDOK))  
-   {  
-      mWriteBuffer->response().fr_envelope.fr_size = mPutOffset;      
-   }
-   else   
-      mWriteBuffer->response().fr_envelope.fr_size = len;         
-   
-   mWriteBuffer->response().fr_returncode = retval;      
-   (void)mWriteBuffer->write(data, len, sizeof(sb_response_frame_t));         
+  mState = State_SENT;
+
+  if (mPutOffset > 0 && retval == static_cast<int>(FNDOK))  
+  {  
+    mWriteBuffer->response().fr_envelope.fr_size = mPutOffset;      
+  }
+  else   
+    mWriteBuffer->response().fr_envelope.fr_size = len;         
+
+  mWriteBuffer->response().fr_returncode = retval;      
+  (void)mWriteBuffer->write(data, len, sizeof(sb_response_frame_t));         
 }
 
 
 int SocketMessageContext::readData(void* buf, size_t len)
 {   
-   assert(buf && len);
-   assert(mState == State_INITIAL);
-   assert(mReadBuffer);
-   
-   // this is called by the servicebroker main dispatcher
-   mState = State_PROCESSING;
-   
-   return mReadBuffer->read(buf, len, sizeof(sb_request_frame_t));
+  assert(buf && len);
+  assert(mState == State_INITIAL);
+  assert(mReadBuffer);
+
+  // this is called by the servicebroker main dispatcher
+  mState = State_PROCESSING;
+
+  return mReadBuffer->read(buf, len, sizeof(sb_request_frame_t));
 }
 
 
 int SocketMessageContext::readAncillaryData(void* buf, size_t len)
 {
-   assert(mState == State_PROCESSING);
-   assert(mGetOffset >= 0);
-   assert(mReadBuffer);
-      
-   int rc = mReadBuffer->read(buf, len, mGetOffset + sizeof(sb_request_frame_t));
-   if (rc > 0)
-      mGetOffset += len;
-      
-   return rc;
+  assert(mState == State_PROCESSING);
+  assert(mGetOffset >= 0);
+  assert(mReadBuffer);
+
+  int rc = mReadBuffer->read(buf, len, mGetOffset + sizeof(sb_request_frame_t));
+  if (rc > 0)
+    mGetOffset += len;
+
+  return rc;
 }
 
 
 void SocketMessageContext::writeAncillaryData(const void* buf, size_t len)
 {
-   assert(mState == State_PROCESSING);
-   assert(mPutOffset >= 0); 
-   assert(mWriteBuffer);
-   
-   (void)mWriteBuffer->write(buf, len, mPutOffset + sizeof(sb_response_frame_t));   
+  assert(mState == State_PROCESSING);
+  assert(mPutOffset >= 0); 
+  assert(mWriteBuffer);
 
-   mPutOffset += len;
+  (void)mWriteBuffer->write(buf, len, mPutOffset + sizeof(sb_response_frame_t));   
+
+  mPutOffset += len;
 }
 
 
 void SocketMessageContext::finalize(Job& job)
 {
-   assert(mState == State_DEFERRED);
+  assert(mState == State_DEFERRED);
 
-   mCtx->mClient.sendDeferredResponse(job.status, job.ret_val, job.arg, job.rbytes);
+  mCtx->mClient.sendDeferredResponse(job.status, job.ret_val, job.arg, job.rbytes);
 }

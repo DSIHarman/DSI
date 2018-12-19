@@ -189,35 +189,35 @@ namespace DSI
          using ServerAttributeBase<std::vector<T> >::invalidate;
          using ServerAttributeBase<std::vector<T> >::setState;
                   
-         void set(const std::vector<T>& from, UpdateType type = UPDATE_COMPLETE, int16_t* position = -1, int16_t* count = -1)
+         void set(const std::vector<T>& from, UpdateType type = UPDATE_COMPLETE, int16_t position = -1, int16_t count = -1)
          {
             assert(position && count);
             
-            if (*position < 0)
-               *position = 0;
+            if (position < 0)
+               position = 0;
             
             switch(type)
             {
             case UPDATE_COMPLETE:
-               *position = 0;
-               *count = from.size();
+               position = 0;
+               count = from.size();
                this->mValue = from;
                break;
 
             case UPDATE_INSERT:
-               *count = from.size();
-               this->mValue.insert(this->mValue.begin()+*position, from.begin(), from.end());
+               count = from.size();
+               this->mValue.insert(this->mValue.begin() + position, from.begin(), from.end());
                break;
 
             case UPDATE_REPLACE:
-               *count = from.size();
-               std::copy(from.begin(), from.end(), this->mValue.begin()+*position);         
+               count = from.size();
+               std::copy(from.begin(), from.end(), this->mValue.begin()+position);
                break;
 
             case UPDATE_DELETE:   
-               if (*count < 0)
-                  *count = this->mValue.size() - *position;
-               this->mValue.erase(this->mValue.begin()+*position, this->mValue.begin()+*position+*count);            
+               if (count < 0)
+                  count = this->mValue.size() - position;
+               this->mValue.erase(this->mValue.begin() + position, this->mValue.begin() + position + count);
                break;
                
             default:

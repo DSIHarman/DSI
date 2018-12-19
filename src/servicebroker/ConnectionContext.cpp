@@ -14,7 +14,7 @@
 
 namespace
 {
-   unsigned int nextId = 1 ;
+  unsigned int nextId = 1 ;
 }
 
 
@@ -26,6 +26,6 @@ ConnectionContext::ConnectionContext(ClientSpecificData& data, pid_t pid)
  //, mNodeAddress(nodeAddress)
  , mPid(pid)
 {
-   // NOOP
+  // NOOP
 }
 

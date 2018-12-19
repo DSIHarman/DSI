@@ -26,7 +26,7 @@ class TCPMasterNotificationReceiver
 {
 public:
 
-   TCPMasterNotificationReceiver(DSI::IPv4::StreamSocket& sock, Notifier* notifier = 0);
+   TCPMasterNotificationReceiver(DSI::IPv4::StreamSocket& sock, Notifier* notifier = nullptr);
 
    void start();
 

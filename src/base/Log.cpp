@@ -14,127 +14,127 @@
 
 namespace /*anonymous*/
 {
-   DSI::Log::Level sLogLevel = DSI::Log::Critical;
-   int sDevice = DSI::Log::SystemLog;
+  DSI::Log::Level sLogLevel = DSI::Log::Critical;
+  int sDevice = DSI::Log::SystemLog;
 }
 
 namespace DSI
 {
-   namespace Log
-   {
-      void setLevel(int level)
+  namespace Log
+  {
+    void setLevel(int level)
+    {
+      if (level < 0)
       {
-         if (level < 0)
-         {
-            level = 0;
-         }
-         else if (level > static_cast<int>(Debug))
-         {
-            level = static_cast<int>(Debug);
-         }
-         
-         sLogLevel = static_cast<Level>(level);
+        level = 0;
+      }
+      else if (level > static_cast<int>(Debug))
+      {
+        level = static_cast<int>(Debug);
       }
 
-      
-      void setDevice(int device)
+      sLogLevel = static_cast<Level>(level);
+    }
+
+
+    void setDevice(int device)
+    {
+      sDevice = device;
+    }
+
+
+    static
+    int mapping[] =
+    {
+      LOG_CRIT,
+      LOG_ERR,
+      LOG_WARNING,
+      LOG_INFO,
+      LOG_DEBUG
+    };
+
+
+    void syslog(Level level, const char* format, ...)
+    {
+      if (level <= sLogLevel)
       {
-         sDevice = device;
+        va_list args;
+        va_start(args, format);
+
+        if (sDevice & Log::SystemLog)
+        {
+          ::vsyslog(LOG_USER|mapping[level], format, args);
+        }
+
+        if (sDevice & Log::Console)
+        {
+          ::vprintf(format, args);
+          ::printf("\n");
+        }
       }
-      
+    }
 
-      static
-      int mapping[] =
+
+    void info(const char* format, ...)
+    {
+      if (sLogLevel >= Log::Info)
       {
-         LOG_CRIT,
-         LOG_ERR,
-         LOG_WARNING,
-         LOG_INFO,
-         LOG_DEBUG
-      };
+        va_list args;
+        va_start(args, format);
 
+        if (sDevice & Log::SystemLog)
+        {
+          ::vsyslog(LOG_USER|LOG_INFO, format, args);
+        }
 
-      void syslog(Level level, const char* format, ...)
-      {
-         if (level <= sLogLevel)
-         {
-            va_list args;
-            va_start(args, format);
-
-            if (sDevice & Log::SystemLog)
-            {
-               ::vsyslog(LOG_USER|mapping[level], format, args);
-            }
-
-            if (sDevice & Log::Console)
-            {
-               ::vprintf(format, args);
-               ::printf("\n");
-            }
-         }
+        if (sDevice & Log::Console)
+        {
+          ::vprintf(format, args);
+          ::printf("\n");
+        }
       }
+    }
 
 
-      void info(const char* format, ...)
+    void warning(const char* format, ...)
+    {
+      if (sLogLevel >= Log::Warning)
       {
-         if (sLogLevel >= Log::Info)
-         {
-            va_list args;
-            va_start(args, format);
+        va_list args;
+        va_start(args, format);
 
-            if (sDevice & Log::SystemLog)
-            {
-               ::vsyslog(LOG_USER|LOG_INFO, format, args);
-            }
+        if (sDevice & Log::SystemLog)
+        {
+          ::vsyslog(LOG_USER|LOG_WARNING, format, args);
+        }
 
-            if (sDevice & Log::Console)
-            {
-               ::vprintf(format, args);
-               ::printf("\n");
-            }
-         }
+        if (sDevice & Log::Console)
+        {
+          ::vprintf(format, args);
+          ::printf("\n");
+        }
       }
+    }
 
 
-      void warning(const char* format, ...)
+    void error(const char* format, ...)
+    {
+      if (sLogLevel >= Log::Error)
       {
-         if (sLogLevel >= Log::Warning)
-         {
-            va_list args;
-            va_start(args, format);
+        va_list args;
+        va_start(args, format);
 
-            if (sDevice & Log::SystemLog)
-            {
-               ::vsyslog(LOG_USER|LOG_WARNING, format, args);
-            }
+        if (sDevice & Log::SystemLog)
+        {
+          ::vsyslog(LOG_USER|LOG_ERR, format, args);
+        }
 
-            if (sDevice & Log::Console)
-            {
-               ::vprintf(format, args);
-               ::printf("\n");
-            }
-         }
+        if (sDevice & Log::Console)
+        {
+          ::vprintf(format, args);
+          ::printf("\n");
+        }
       }
-
-
-      void error(const char* format, ...)
-      {
-         if (sLogLevel >= Log::Error)
-         {
-            va_list args;
-            va_start(args, format);
-
-            if (sDevice & Log::SystemLog)
-            {
-               ::vsyslog(LOG_USER|LOG_ERR, format, args);
-            }
-
-            if (sDevice & Log::Console)
-            {
-               ::vprintf(format, args);
-               ::printf("\n");
-            }
-         }
-      }
-   }
+    }
+  }
 }

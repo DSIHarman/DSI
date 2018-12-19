@@ -40,7 +40,7 @@ int sendAuthPackage(int fd, int sendCredentials);
  * Create a unix socket path in abstract namespace from given pid and chid.
  * The buffer must be at least UNIX_PATH_MAX(108) bytes long.
  */
-const char* make_unix_path(char* buf, size_t len, int pid, int chid);
+const char* make_unix_path(char* buf, size_t len, int pid, int64_t chid);
 
 
 #ifdef __cplusplus

@@ -80,7 +80,7 @@ public:
    inline
    operator const void*() const
    {
-      return mThread ? this : 0;
+      return mThread ? this : nullptr;
    }
 
 private:
@@ -97,7 +97,7 @@ private:
    MasterAdapter* mAster;
 
    // internal event notifier
-   std::auto_ptr<Notifier> mNotifier;
+   std::unique_ptr<Notifier> mNotifier;
 };
 
 

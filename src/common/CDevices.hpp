@@ -66,7 +66,7 @@ namespace DSI
 
       inline
       Device()
-         : dispatcher_(0)
+         : dispatcher_(nullptr)
          , fd_(TraitsT::Invalid)
       {
          // NOOP
@@ -126,7 +126,7 @@ namespace DSI
 
       inline
       Device(fd_type fd)
-         : dispatcher_(0)
+         : dispatcher_(nullptr)
          , fd_(fd)
       {
          // NOOP
@@ -336,7 +336,7 @@ namespace DSI
       inline
       operator const void*() const
       {
-         return is_open() ? this : 0;
+         return is_open() ? this : nullptr;
       }
 
 
@@ -550,7 +550,7 @@ namespace DSI
          endpoint_type endpoint;
          socklen_t len = sizeof(endpoint);
 
-         (void)::getsockname(fd_, (struct sockaddr*)endpoint, (socklen_t *)&len);
+         (void)::getsockname(fd_, static_cast<struct sockaddr*>(endpoint), static_cast<socklen_t *>(&len));
 
          return endpoint;
       }
@@ -564,7 +564,7 @@ namespace DSI
          endpoint_type endpoint;
          socklen_t len = sizeof(endpoint);
 
-         (void)::getpeername(fd_, (struct sockaddr*)endpoint, (socklen_t *)&len);
+         (void)::getpeername(fd_, static_cast<struct sockaddr*>(endpoint), static_cast<socklen_t *>(&len));
 
          return endpoint;
       }
@@ -578,7 +578,7 @@ namespace DSI
 
       io::error_code connect(const AddressT& addr)
       {
-         ssize_t rc = ::connect(fd_, (const struct sockaddr*)addr, addr.getSockAddrSize());
+         ssize_t rc = ::connect(fd_, static_cast<const struct sockaddr*>(addr), addr.getSockAddrSize());
          return rc == 0 ? io::ok : io::to_error_code(io::getLastError());
       }
 

@@ -110,7 +110,7 @@ namespace DSI
             case EPIPE:           // fall-through
             case EINPROGRESS:     // fall-through
             case EINTR:
-               rc = (error_code)errno_value;
+               rc = static_cast<error_code>(errno_value);
                break;
             default:
                /* NOOP */
